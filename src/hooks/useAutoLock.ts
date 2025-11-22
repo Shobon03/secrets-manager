@@ -2,7 +2,7 @@ import { invoke } from '@tauri-apps/api/core';
 import { useCallback, useEffect, useRef } from 'react';
 
 const MS_BASE = 1000;
-const TIMEOUT_MS = 2 * 5 * MS_BASE; // 2-minute wait until it auto-locks
+const TIMEOUT_MS = 2 * 60 * MS_BASE; // 2-minute wait until it auto-locks
 
 export function useAutoLock(isLoggedIn: boolean, onLock: () => void) {
   const timerRef = useRef<number | null>(null);

@@ -1,5 +1,9 @@
+use aes_gcm::{
+    aead::{Aead, AeadCore, KeyInit, OsRng as AeadOsRng},
+    Aes256Gcm, Nonce,
+};
 use argon2::{
-    password_hash::{rand_core::OsRng, PasswordHasher, SaltString},
+    password_hash::{rand_core::OsRng as Argon2OsRng, PasswordHasher, SaltString},
     Argon2,
 };
 use zeroize::{Zeroize, ZeroizeOnDrop};
@@ -12,7 +16,7 @@ pub struct MasterKey {
 }
 
 pub fn generate_salt() -> String {
-    let salt = SaltString::generate(&mut OsRng);
+    let salt = SaltString::generate(&mut Argon2OsRng);
     salt.as_str().to_string()
 }
 
@@ -32,6 +36,41 @@ pub fn derive_key_from_password(password: &str, salt_str: &str) -> Result<Master
         .map_err(|e| format!("Erro ao derivar chave: {}", e))?;
 
     Ok(MasterKey { key: key_buffer })
+}
+
+pub fn encrypt_data(data: &str, key: &MasterKey) -> Result<Vec<u8>> {
+    let cipher = Aes256Gcm::new(&key.key.into());
+
+    let nonce = Aes256Gcm::generate_nonce(&mut AeadOsRng);
+
+    let ciphertext = cipher
+        .encrypt(&nonce, data.as_bytes())
+        .map_err(|e| format!("Falha na criptografia AES: {}", e))?;
+
+    let mut package = nonce.to_vec();
+    package.extend(ciphertext);
+
+    Ok(package)
+}
+
+pub fn decrypt_data(encrypted_data: &[u8], key: &MasterKey) -> Result<String> {
+    if encrypted_data.len() < 12 {
+        return Err("Arquivo inválido ou corrompido".to_string());
+    }
+
+    let cipher = Aes256Gcm::new(&key.key.into());
+
+    let nonce = Nonce::from_slice(&encrypted_data[0..12]);
+    let ciphertext = &encrypted_data[12..];
+
+    let plaintext_bytes = cipher
+        .decrypt(nonce, ciphertext)
+        .map_err(|_| "Senha incorreta ou arquivo incompleto".to_string())?;
+
+    let plaintext = String::from_utf8(plaintext_bytes.to_vec())
+        .map_err(|_| "Erro de encoding UTF-8".to_string())?;
+
+    Ok(plaintext)
 }
 
 #[cfg(test)]

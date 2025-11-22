@@ -1,6 +1,15 @@
 import { invoke } from '@tauri-apps/api/core';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
-import { Copy, Edit, Plus, Trash, Trash2 } from 'lucide-react';
+import { open, save } from '@tauri-apps/plugin-dialog';
+import {
+  Copy,
+  Edit,
+  HardDriveDownload,
+  HardDriveUpload,
+  Plus,
+  Trash,
+  Trash2,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 // Tipagem igual à Struct do Rust
@@ -97,6 +106,66 @@ export function Dashboard() {
     }
   }
 
+  async function handleExport() {
+    const passwordConfirm = prompt('Confirme a sua senha para exportar');
+    if (!passwordConfirm) return;
+
+    try {
+      const filePath = await save({
+        filters: [
+          {
+            name: 'Backupo Criptografado',
+            extensions: ['enc', 'json'],
+          },
+        ],
+        defaultPath: 'meus_segredos_backup.enc',
+      });
+
+      if (!filePath) return;
+
+      await invoke('export_vault', {
+        filePath,
+        password: passwordConfirm,
+      });
+
+      alert('Backup exportado com sucesso!');
+    } catch (e) {
+      console.error(e);
+      alert(`Erro ao exportar: ${e}`);
+    }
+  }
+
+  async function handleImport() {
+    try {
+      const filePath = await open({
+        multiple: false,
+        filters: [
+          {
+            name: 'Backupo Criptografado',
+            extensions: ['enc', 'json'],
+          },
+        ],
+      });
+
+      if (!filePath) return;
+
+      const passwordConfirm = prompt('Confirme a sua senha para importar');
+      if (!passwordConfirm) return;
+
+      const msg = await invoke('import_vault', {
+        filePath: filePath,
+        password: passwordConfirm,
+      });
+
+      alert(msg);
+
+      loadSecrets();
+    } catch (e) {
+      console.error(e);
+      alert(`Erro ao importar: ${e}`);
+    }
+  }
+
   return (
     <div className='dashboard'>
       <div
@@ -107,23 +176,65 @@ export function Dashboard() {
         }}
       >
         <h2>🔐 Meus Segredos</h2>
-        <button
-          type='button'
-          onClick={() => {
-            setIsCreateSecret((prev) => !prev);
-          }}
+        <div
           style={{
-            padding: 10,
-            gap: 10,
             display: 'flex',
+            gap: 10,
             alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: 16,
           }}
-          title='Novo login'
         >
-          <Plus size={24} />
-        </button>
+          <button
+            type='button'
+            onClick={() => {
+              handleImport();
+            }}
+            style={{
+              padding: 10,
+              gap: 10,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 16,
+            }}
+            title='Importar Cofre'
+          >
+            <HardDriveUpload size={24} />
+          </button>
+          <button
+            type='button'
+            onClick={() => {
+              handleExport();
+            }}
+            style={{
+              padding: 10,
+              gap: 10,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 16,
+            }}
+            title='Exportar Cofre'
+          >
+            <HardDriveDownload size={24} />
+          </button>
+          <button
+            type='button'
+            onClick={() => {
+              setIsCreateSecret((prev) => !prev);
+            }}
+            style={{
+              padding: 10,
+              gap: 10,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 16,
+            }}
+            title='Novo login'
+          >
+            <Plus size={24} />
+          </button>
+        </div>
       </div>
 
       {/* Formulário de Adição/Edição */}
