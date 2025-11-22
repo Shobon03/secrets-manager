@@ -184,3 +184,12 @@ pub fn update_secret(
 
     Ok("Segredo atualizado!".to_string())
 }
+
+#[tauri::command]
+pub fn lock_vault(state: State<'_, AppState>) -> Result<String, String> {
+    let mut db_guard = state.db.lock().map_err(|_| "Falha no Mutex".to_string())?;
+
+    *db_guard = None;
+
+    Ok("Cofre trancado.".to_string())
+}

@@ -20,7 +20,8 @@ pub fn run() {
             commands::get_all_secrets,
             commands::create_secret,
             commands::delete_secret,
-            commands::update_secret
+            commands::update_secret,
+            commands::lock_vault
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

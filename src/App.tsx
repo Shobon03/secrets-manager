@@ -1,8 +1,10 @@
 import { invoke } from '@tauri-apps/api/core';
 import { useEffect, useState } from 'react';
-import { Dashboard } from './Dashboard';
+import { useAutoLock } from './hooks/useAutoLock';
+import { Dashboard } from './routes/Dashboard';
 
 import './App.css';
+import { Lock } from 'lucide-react';
 
 function App() {
   const [password, setPassword] = useState('');
@@ -11,6 +13,14 @@ function App() {
 
   // Estado para saber se é Login ou Cadastro
   const [hasVault, setHasVault] = useState<boolean | null>(null);
+
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useAutoLock(isLoggedIn, () => {
+    setIsLoggedIn(false);
+    setPassword('');
+    setStatus('💤 Sessão expirada por inatividade.');
+  });
 
   // Ao iniciar, pergunta ao Rust se já existe um cofre
   useEffect(() => {
@@ -37,11 +47,13 @@ function App() {
         // Fluxo de Login
         await invoke('unlock_vault', { password });
         setStatus('🔓 Cofre Aberto!');
+        setIsLoggedIn(true);
       } else {
         // Fluxo de Criação (Setup)
         await invoke('setup_vault', { password });
         setStatus('✅ Cofre Criado e Aberto!');
         setHasVault(true); // Agora existe um cofre
+        setIsLoggedIn(true);
       }
     } catch (error) {
       console.error(error);
@@ -51,8 +63,34 @@ function App() {
     }
   }
 
-  if (status.includes('Aberto') || status.includes('Sucesso')) {
-    return <Dashboard />;
+  if (isLoggedIn) {
+    return (
+      <div>
+        <div style={{ position: 'absolute', bottom: 10, right: 10 }}>
+          <button
+            type='button'
+            style={{
+              padding: 10,
+              gap: 10,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 16,
+              backgroundColor: '#f4ca16 ',
+            }}
+            onClick={() => {
+              setIsLoggedIn(false);
+              setPassword('');
+              setStatus('💤 Sessão fechada.');
+            }}
+            title='Trancar cofre'
+          >
+            <Lock size={24} />
+          </button>
+        </div>
+        <Dashboard />
+      </div>
+    );
   }
 
   if (hasVault === null) return <p>Carregando...</p>;
