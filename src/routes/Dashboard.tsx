@@ -7,10 +7,20 @@ import {
   HardDriveDownload,
   HardDriveUpload,
   Plus,
-  Trash,
   Trash2,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import { Button } from '../components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '../components/ui/card';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
+import { Separator } from '../components/ui/separator';
 
 // Tipagem igual à Struct do Rust
 interface Secret {
@@ -53,7 +63,7 @@ export function Dashboard() {
       const data = await invoke<Secret[]>('get_all_secrets');
       setSecrets(data);
     } catch (e) {
-      alert(`Erro ao carregar: ${e}`);
+      toast.error(`Erro ao carregar: ${e}`);
     }
   }
 
@@ -61,12 +71,12 @@ export function Dashboard() {
     e.preventDefault();
     try {
       await invoke('create_secret', form);
-      // Limpa formulário e recarrega lista
       setForm({ title: '', username: '', password: '' });
       loadSecrets();
       setIsCreateSecret(false);
+      toast.success('Segredo criado com sucesso!');
     } catch (e) {
-      alert(`Erro ao salvar: ${e}`);
+      toast.error(`Erro ao salvar: ${e}`);
     }
   }
 
@@ -74,35 +84,34 @@ export function Dashboard() {
     e.preventDefault();
     try {
       const updateData = { ...form, id: editSecretId };
-
       await invoke('update_secret', updateData);
-      // Limpa formulário e recarrega lista
       setForm({ title: '', username: '', password: '' });
       loadSecrets();
       setEditSecretId(null);
       setIsEditSecret(false);
+      toast.success('Segredo atualizado com sucesso!');
     } catch (e) {
-      alert(`Erro ao editar: ${e}`);
+      toast.error(`Erro ao editar: ${e}`);
     }
   }
 
   async function handleDelete(id: number) {
     try {
       await invoke('delete_secret', { id });
-      // Limpa formulário e recarrega lista
       setForm({ title: '', username: '', password: '' });
       loadSecrets();
+      toast.success('Segredo deletado com sucesso!');
     } catch (e) {
-      alert(`Erro ao deletar: ${e}`);
+      toast.error(`Erro ao deletar: ${e}`);
     }
   }
 
   async function copyToClipboard(text: string) {
     try {
       await writeText(text);
-      alert('Texto copiado para a área de transferência');
+      toast.success('Copiado para a área de transferência!');
     } catch (e) {
-      alert(`Erro ao copiar: ${e}`);
+      toast.error(`Erro ao copiar: ${e}`);
     }
   }
 
@@ -114,7 +123,7 @@ export function Dashboard() {
       const filePath = await save({
         filters: [
           {
-            name: 'Backupo Criptografado',
+            name: 'Backup Criptografado',
             extensions: ['enc', 'json'],
           },
         ],
@@ -128,10 +137,10 @@ export function Dashboard() {
         password: passwordConfirm,
       });
 
-      alert('Backup exportado com sucesso!');
+      toast.success('Backup exportado com sucesso!');
     } catch (e) {
       console.error(e);
-      alert(`Erro ao exportar: ${e}`);
+      toast.error(`Erro ao exportar: ${e}`);
     }
   }
 
@@ -141,7 +150,7 @@ export function Dashboard() {
         multiple: false,
         filters: [
           {
-            name: 'Backupo Criptografado',
+            name: 'Backup Criptografado',
             extensions: ['enc', 'json'],
           },
         ],
@@ -157,237 +166,190 @@ export function Dashboard() {
         password: passwordConfirm,
       });
 
-      alert(msg);
-
+      toast.success(msg as string);
       loadSecrets();
     } catch (e) {
       console.error(e);
-      alert(`Erro ao importar: ${e}`);
+      toast.error(`Erro ao importar: ${e}`);
     }
   }
 
   return (
-    <div className='dashboard'>
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}
-      >
-        <h2>🔐 Meus Segredos</h2>
-        <div
-          style={{
-            display: 'flex',
-            gap: 10,
-            alignItems: 'center',
-          }}
-        >
-          <button
-            type='button'
-            onClick={() => {
-              handleImport();
-            }}
-            style={{
-              padding: 10,
-              gap: 10,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 16,
-            }}
+    <div className='container mx-auto p-6 max-w-6xl'>
+      <div className='flex items-center justify-between mb-6'>
+        <h2 className='text-3xl font-bold'>🔐 Meus Segredos</h2>
+        <div className='flex gap-2'>
+          <Button
+            variant='outline'
+            size='icon'
+            onClick={handleImport}
             title='Importar Cofre'
           >
-            <HardDriveUpload size={24} />
-          </button>
-          <button
-            type='button'
-            onClick={() => {
-              handleExport();
-            }}
-            style={{
-              padding: 10,
-              gap: 10,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 16,
-            }}
+            <HardDriveUpload className='h-5 w-5' />
+          </Button>
+          <Button
+            variant='outline'
+            size='icon'
+            onClick={handleExport}
             title='Exportar Cofre'
           >
-            <HardDriveDownload size={24} />
-          </button>
-          <button
-            type='button'
-            onClick={() => {
-              setIsCreateSecret((prev) => !prev);
-            }}
-            style={{
-              padding: 10,
-              gap: 10,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 16,
-            }}
+            <HardDriveDownload className='h-5 w-5' />
+          </Button>
+          <Button
+            variant='default'
+            size='icon'
+            onClick={() => setIsCreateSecret((prev) => !prev)}
             title='Novo login'
           >
-            <Plus size={24} />
-          </button>
+            <Plus className='h-5 w-5' />
+          </Button>
         </div>
       </div>
 
-      {/* Formulário de Adição/Edição */}
       {(isCreateSecret || isEditSecret) && (
-        <div className='card'>
-          <h3>{isEditSecret ? 'Editar' : 'Novo'} Login</h3>
-          <form
-            onSubmit={isEditSecret ? handleEdit : handleAdd}
-            style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}
-          >
-            <input
-              placeholder='Título (ex: Google)'
-              value={form.title}
-              onChange={(e) => setForm({ ...form, title: e.target.value })}
-              required
-            />
-            <input
-              placeholder='Usuário'
-              value={form.username}
-              onChange={(e) => setForm({ ...form, username: e.target.value })}
-            />
-            <input
-              placeholder='Senha'
-              type='password'
-              value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
-              required
-            />
-            <button type='submit'>Salvar</button>
-          </form>
-        </div>
+        <Card className='mb-6'>
+          <CardHeader>
+            <CardTitle>{isEditSecret ? 'Editar' : 'Novo'} Login</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form
+              onSubmit={isEditSecret ? handleEdit : handleAdd}
+              className='space-y-4'
+            >
+              <div className='space-y-2'>
+                <Label htmlFor='title'>Título</Label>
+                <Input
+                  id='title'
+                  placeholder='Ex: Google, GitHub...'
+                  value={form.title}
+                  onChange={(e) => setForm({ ...form, title: e.target.value })}
+                  required
+                />
+              </div>
+              <div className='space-y-2'>
+                <Label htmlFor='username'>Usuário</Label>
+                <Input
+                  id='username'
+                  placeholder='email@exemplo.com'
+                  value={form.username}
+                  onChange={(e) =>
+                    setForm({ ...form, username: e.target.value })
+                  }
+                />
+              </div>
+              <div className='space-y-2'>
+                <Label htmlFor='password'>Senha</Label>
+                <Input
+                  id='password'
+                  type='password'
+                  placeholder='Digite a senha...'
+                  value={form.password}
+                  onChange={(e) =>
+                    setForm({ ...form, password: e.target.value })
+                  }
+                  required
+                />
+              </div>
+              <div className='flex gap-2'>
+                <Button type='submit' className='flex-1'>
+                  Salvar
+                </Button>
+                <Button
+                  type='button'
+                  variant='outline'
+                  onClick={() => {
+                    setIsCreateSecret(false);
+                    setIsEditSecret(false);
+                    setEditSecretId(null);
+                    setForm({ title: '', username: '', password: '' });
+                  }}
+                >
+                  Cancelar
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
       )}
 
       {!isEditSecret && (
-        <div className='list'>
+        <div className='space-y-4'>
           {secrets.map((s) => (
-            <div
-              key={s.id}
-              className='item'
-              style={{
-                borderBottom: '1px solid #444',
-                padding: '10px',
-                display: 'flex',
-                gap: '10px',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-              }}
-            >
-              <div>
-                <strong>{s.title}</strong>
-                <br />
-                <div
-                  style={{
-                    display: 'flex',
-                    gap: '10px',
-                    alignItems: 'center',
-                  }}
-                >
-                  <small>User: {s.username}</small>
-
-                  <button
-                    type='button'
-                    style={{
-                      padding: 5,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                    onClick={() => {
-                      copyToClipboard(s.username);
-                    }}
-                    title='Copiar'
-                  >
-                    <Copy size={16} />
-                  </button>
+            <Card key={s.id}>
+              <CardContent className='pt-6'>
+                <div className='flex items-start justify-between'>
+                  <div className='flex-1 space-y-3'>
+                    <h3 className='text-xl font-semibold'>{s.title}</h3>
+                    <Separator />
+                    <div className='flex items-center gap-2'>
+                      <span className='text-sm text-muted-foreground min-w-16'>
+                        Usuário:
+                      </span>
+                      <span className='text-sm font-mono'>{s.username}</span>
+                      <Button
+                        variant='ghost'
+                        size='icon'
+                        className='h-8 w-8'
+                        onClick={() => copyToClipboard(s.username)}
+                        title='Copiar usuário'
+                      >
+                        <Copy className='h-4 w-4' />
+                      </Button>
+                    </div>
+                    <div className='flex items-center gap-2'>
+                      <span className='text-sm text-muted-foreground min-w-16'>
+                        Senha:
+                      </span>
+                      <span className='text-sm font-mono' title={s.password}>
+                        {Array(s.password?.length || 1)
+                          .fill('•')
+                          .toString()
+                          .replace(/,/g, '')}
+                      </span>
+                      <Button
+                        variant='ghost'
+                        size='icon'
+                        className='h-8 w-8'
+                        onClick={() => copyToClipboard(s.password ?? '')}
+                        title='Copiar senha'
+                      >
+                        <Copy className='h-4 w-4' />
+                      </Button>
+                    </div>
+                  </div>
+                  <div className='flex gap-2 ml-4'>
+                    <Button
+                      variant='outline'
+                      size='icon'
+                      onClick={() => {
+                        setIsEditSecret(true);
+                        setEditSecretId(s.id);
+                      }}
+                      title='Editar'
+                    >
+                      <Edit className='h-4 w-4' />
+                    </Button>
+                    <Button
+                      variant='destructive'
+                      size='icon'
+                      onClick={() => handleDelete(s.id)}
+                      title='Excluir'
+                    >
+                      <Trash2 className='h-4 w-4' />
+                    </Button>
+                  </div>
                 </div>
-                <div
-                  style={{
-                    display: 'flex',
-                    gap: '10px',
-                    alignItems: 'center',
-                  }}
-                >
-                  <small>
-                    Pass:{' '}
-                    <span title={s.password}>
-                      {Array(s.password?.length || 1)
-                        .fill('•')
-                        .toString()
-                        .replace(/,/g, '')}{' '}
-                      (Passe o mouse)
-                    </span>
-                  </small>
-                  <button
-                    type='button'
-                    style={{
-                      padding: 5,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                    onClick={() => {
-                      copyToClipboard(s.password ?? '');
-                    }}
-                    title='Copiar'
-                  >
-                    <Copy size={16} />
-                  </button>
-                </div>
-              </div>
-              <div
-                style={{
-                  display: 'flex',
-                  gap: 5,
-                }}
-              >
-                <button
-                  type='button'
-                  style={{
-                    padding: 10,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                  onClick={() => {
-                    setIsEditSecret(true);
-                    setEditSecretId(s.id);
-                  }}
-                  title='Editar'
-                >
-                  <Edit size={16} />
-                </button>
-                <button
-                  type='button'
-                  style={{
-                    padding: 10,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: '#ff1a1a',
-                    color: '#fff',
-                  }}
-                  onClick={() => {
-                    handleDelete(s.id);
-                  }}
-                  title='Excluir'
-                >
-                  <Trash2 size={16} />
-                </button>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           ))}
-          {secrets.length === 0 && <p>Nenhum segredo salvo ainda.</p>}
+          {secrets.length === 0 && (
+            <Card>
+              <CardContent className='py-12 text-center text-muted-foreground'>
+                Nenhum segredo salvo ainda. Clique no botão + para adicionar seu
+                primeiro login!
+              </CardContent>
+            </Card>
+          )}
         </div>
       )}
     </div>

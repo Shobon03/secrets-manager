@@ -5,6 +5,18 @@ import { Dashboard } from './routes/Dashboard';
 
 import './App.css';
 import { Lock } from 'lucide-react';
+import { ThemeProvider } from './components/theme-provider';
+import { Button } from './components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from './components/ui/card';
+import { Input } from './components/ui/input';
+import { Label } from './components/ui/label';
+import { Toaster } from './components/ui/sonner';
 
 function App() {
   const [password, setPassword] = useState('');
@@ -65,19 +77,11 @@ function App() {
 
   if (isLoggedIn) {
     return (
-      <div>
-        <div style={{ position: 'absolute', bottom: 10, right: 10 }}>
-          <button
-            type='button'
-            style={{
-              padding: 10,
-              gap: 10,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 16,
-              backgroundColor: '#f4ca16 ',
-            }}
+      <>
+        <div className='fixed bottom-4 right-4'>
+          <Button
+            variant='outline'
+            size='icon'
             onClick={() => {
               setIsLoggedIn(false);
               setPassword('');
@@ -85,39 +89,69 @@ function App() {
             }}
             title='Trancar cofre'
           >
-            <Lock size={24} />
-          </button>
+            <Lock className='h-5 w-5' />
+          </Button>
         </div>
         <Dashboard />
-      </div>
+        <Toaster />
+      </>
     );
   }
 
-  if (hasVault === null) return <p>Carregando...</p>;
+  if (hasVault === null)
+    return (
+      <ThemeProvider defaultTheme='dark' storageKey='vite-ui-theme'>
+        <div className='flex items-center justify-center min-h-screen'>
+          <p>Carregando...</p>
+        </div>
+      </ThemeProvider>
+    );
 
   return (
-    <main className='container'>
-      <h1>{hasVault ? '🔐 Login no Cofre' : '🆕 Criar Novo Cofre'}</h1>
-
-      <p>
-        {hasVault
-          ? 'Digite sua Senha Mestra para abrir.'
-          : 'Defina uma Senha Mestra para criptografar seus dados.'}
-      </p>
-
-      <form className='row' onSubmit={handleSubmit}>
-        <input
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder='Senha Mestra...'
-          type='password'
-          disabled={isLoading}
-        />
-        <button type='submit' disabled={isLoading}>
-          {isLoading ? 'Processando...' : hasVault ? 'Abrir' : 'Criar Cofre'}
-        </button>
-      </form>
-      <p>{status}</p>
-    </main>
+    <ThemeProvider defaultTheme='dark' storageKey='vite-ui-theme'>
+      <div className='flex items-center justify-center min-h-screen p-4'>
+        <Card className='w-full max-w-md'>
+          <CardHeader>
+            <CardTitle className='text-2xl'>
+              {hasVault ? '🔐 Login no Cofre' : '🆕 Criar Novo Cofre'}
+            </CardTitle>
+            <CardDescription>
+              {hasVault
+                ? 'Digite sua Senha Mestra para abrir.'
+                : 'Defina uma Senha Mestra para criptografar seus dados.'}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className='space-y-4'>
+              <div className='space-y-2'>
+                <Label htmlFor='password'>Senha Mestra</Label>
+                <Input
+                  id='password'
+                  type='password'
+                  placeholder='Digite sua senha...'
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  disabled={isLoading}
+                  required
+                />
+              </div>
+              <Button type='submit' className='w-full' disabled={isLoading}>
+                {isLoading
+                  ? 'Processando...'
+                  : hasVault
+                    ? 'Abrir Cofre'
+                    : 'Criar Cofre'}
+              </Button>
+              {status && (
+                <p className='text-sm text-center text-muted-foreground mt-2'>
+                  {status}
+                </p>
+              )}
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    </ThemeProvider>
   );
 }
 
