@@ -12,7 +12,16 @@ pub fn run() {
             db: Mutex::new(None),
         })
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![commands::unlock_vault])
+        .plugin(tauri_plugin_clipboard_manager::init())
+        .invoke_handler(tauri::generate_handler![
+            commands::unlock_vault,
+            commands::setup_vault,
+            commands::check_vault_status,
+            commands::get_all_secrets,
+            commands::create_secret,
+            commands::delete_secret,
+            commands::update_secret
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
