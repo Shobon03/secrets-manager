@@ -9,16 +9,7 @@ pub fn initialize_database(path: &Path, key: &MasterKey) -> Result<Connection> {
 
     conn.pragma_update(None, "key", &format!("x'{}'", key_hex))?;
 
-    conn.execute(
-        "CREATE TABLE IF NOT EXISTS secrets (
-            id INTEGER PRIMARY KEY,
-            title TEXT NOT NULL,
-            username TEXT,
-            password_blob BLOB NOT NULL,
-            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-        )",
-        [],
-    )?;
+    conn.execute_batch(include_str!("../migrations/schema.sql"))?;
 
     Ok(conn)
 }

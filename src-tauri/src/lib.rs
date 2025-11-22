@@ -1,8 +1,14 @@
-pub mod commands;
-pub mod database;
-pub mod security;
+mod commands;
 
-use commands::AppState;
+pub mod database;
+pub mod models;
+pub mod security;
+pub mod state;
+pub mod utils;
+
+use commands::{secrets, vaults};
+
+use state::AppState;
 use std::sync::Mutex;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -15,17 +21,18 @@ pub fn run() {
         .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_os::init())
         .invoke_handler(tauri::generate_handler![
-            commands::unlock_vault,
-            commands::setup_vault,
-            commands::check_vault_status,
-            commands::get_all_secrets,
-            commands::create_secret,
-            commands::delete_secret,
-            commands::update_secret,
-            commands::lock_vault,
-            commands::export_vault,
-            commands::import_vault
+            vaults::unlock_vault,
+            vaults::setup_vault,
+            vaults::check_vault_status,
+            vaults::lock_vault,
+            vaults::export_vault,
+            vaults::import_vault,
+            secrets::get_all_secrets,
+            secrets::create_secret,
+            secrets::delete_secret,
+            secrets::update_secret,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

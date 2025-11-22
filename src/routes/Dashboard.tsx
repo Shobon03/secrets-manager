@@ -18,6 +18,14 @@ import {
   CardHeader,
   CardTitle,
 } from '../components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '../components/ui/dialog';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Separator } from '../components/ui/separator';
@@ -38,6 +46,14 @@ export function Dashboard() {
 
   const [isEditSecret, setIsEditSecret] = useState(false);
   const [editSecretId, setEditSecretId] = useState<number | null>(null);
+
+  // Estados para os dialogs
+  const [showExportDialog, setShowExportDialog] = useState(false);
+  const [showImportDialog, setShowImportDialog] = useState(false);
+  const [dialogPassword, setDialogPassword] = useState('');
+  const [pendingImportFilePath, setPendingImportFilePath] = useState<
+    string | null
+  >(null);
 
   // Carrega a lista ao abrir
   useEffect(() => {
@@ -116,10 +132,15 @@ export function Dashboard() {
   }
 
   async function handleExport() {
-    const passwordConfirm = prompt('Confirme a sua senha para exportar');
-    if (!passwordConfirm) return;
+    // Primeiro pede a senha
+    setShowExportDialog(true);
+  }
+
+  async function confirmExport() {
+    if (!dialogPassword) return;
 
     try {
+      // Depois de ter a senha, escolhe o caminho do arquivo
       const filePath = await save({
         filters: [
           {
@@ -132,12 +153,15 @@ export function Dashboard() {
 
       if (!filePath) return;
 
+      // Exporta com a senha e o caminho
       await invoke('export_vault', {
         filePath,
-        password: passwordConfirm,
+        password: dialogPassword,
       });
 
       toast.success('Backup exportado com sucesso!');
+      setShowExportDialog(false);
+      setDialogPassword('');
     } catch (e) {
       console.error(e);
       toast.error(`Erro ao exportar: ${e}`);
@@ -146,6 +170,7 @@ export function Dashboard() {
 
   async function handleImport() {
     try {
+      // Primeiro escolhe o arquivo
       const filePath = await open({
         multiple: false,
         filters: [
@@ -158,16 +183,30 @@ export function Dashboard() {
 
       if (!filePath) return;
 
-      const passwordConfirm = prompt('Confirme a sua senha para importar');
-      if (!passwordConfirm) return;
+      // Depois pede a senha
+      setPendingImportFilePath(filePath as string);
+      setShowImportDialog(true);
+    } catch (e) {
+      console.error(e);
+      toast.error(`Erro ao selecionar arquivo: ${e}`);
+    }
+  }
 
+  async function confirmImport() {
+    if (!dialogPassword || !pendingImportFilePath) return;
+
+    try {
+      // Importa com a senha e o caminho
       const msg = await invoke('import_vault', {
-        filePath: filePath,
-        password: passwordConfirm,
+        filePath: pendingImportFilePath,
+        password: dialogPassword,
       });
 
       toast.success(msg as string);
       loadSecrets();
+      setShowImportDialog(false);
+      setDialogPassword('');
+      setPendingImportFilePath(null);
     } catch (e) {
       console.error(e);
       toast.error(`Erro ao importar: ${e}`);
@@ -352,6 +391,90 @@ export function Dashboard() {
           )}
         </div>
       )}
+
+      {/* Dialog para Exportar */}
+      <Dialog open={showExportDialog} onOpenChange={setShowExportDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirme sua senha</DialogTitle>
+            <DialogDescription>
+              Digite sua senha mestra para exportar o backup do cofre.
+            </DialogDescription>
+          </DialogHeader>
+          <div className='space-y-2'>
+            <Label htmlFor='export-password'>Senha Mestra</Label>
+            <Input
+              id='export-password'
+              type='password'
+              placeholder='Digite sua senha...'
+              value={dialogPassword}
+              onChange={(e) => setDialogPassword(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  confirmExport();
+                }
+              }}
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              variant='outline'
+              onClick={() => {
+                setShowExportDialog(false);
+                setDialogPassword('');
+                setPendingFilePath(null);
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button onClick={confirmExport} disabled={!dialogPassword}>
+              Exportar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog para Importar */}
+      <Dialog open={showImportDialog} onOpenChange={setShowImportDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirme sua senha</DialogTitle>
+            <DialogDescription>
+              Digite sua senha mestra para importar o backup do cofre.
+            </DialogDescription>
+          </DialogHeader>
+          <div className='space-y-2'>
+            <Label htmlFor='import-password'>Senha Mestra</Label>
+            <Input
+              id='import-password'
+              type='password'
+              placeholder='Digite sua senha...'
+              value={dialogPassword}
+              onChange={(e) => setDialogPassword(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  confirmImport();
+                }
+              }}
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              variant='outline'
+              onClick={() => {
+                setShowImportDialog(false);
+                setDialogPassword('');
+                setPendingFilePath(null);
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button onClick={confirmImport} disabled={!dialogPassword}>
+              Importar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

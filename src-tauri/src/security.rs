@@ -3,7 +3,7 @@ use aes_gcm::{
     Aes256Gcm, Nonce,
 };
 use argon2::{
-    password_hash::{rand_core::OsRng as Argon2OsRng, PasswordHasher, SaltString},
+    password_hash::{rand_core::OsRng as Argon2OsRng, SaltString},
     Argon2,
 };
 use zeroize::{Zeroize, ZeroizeOnDrop};

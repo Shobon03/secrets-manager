@@ -1,11 +1,8 @@
 import { invoke } from '@tauri-apps/api/core';
-import { useEffect, useState } from 'react';
-import { useAutoLock } from './hooks/useAutoLock';
-import { Dashboard } from './routes/Dashboard';
-
-import './App.css';
 import { Lock } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { ThemeProvider } from './components/theme-provider';
+import { TitleBar } from './components/title-bar';
 import { Button } from './components/ui/button';
 import {
   Card,
@@ -17,6 +14,10 @@ import {
 import { Input } from './components/ui/input';
 import { Label } from './components/ui/label';
 import { Toaster } from './components/ui/sonner';
+import { useAutoLock } from './hooks/useAutoLock';
+import { Dashboard } from './routes/Dashboard';
+
+import './App.css';
 
 function App() {
   const [password, setPassword] = useState('');
@@ -75,82 +76,78 @@ function App() {
     }
   }
 
-  if (isLoggedIn) {
-    return (
-      <>
-        <div className='fixed bottom-4 right-4'>
-          <Button
-            variant='outline'
-            size='icon'
-            onClick={() => {
-              setIsLoggedIn(false);
-              setPassword('');
-              setStatus('💤 Sessão fechada.');
-            }}
-            title='Trancar cofre'
-          >
-            <Lock className='h-5 w-5' />
-          </Button>
-        </div>
-        <Dashboard />
-        <Toaster />
-      </>
-    );
-  }
-
-  if (hasVault === null)
-    return (
-      <ThemeProvider defaultTheme='dark' storageKey='vite-ui-theme'>
-        <div className='flex items-center justify-center min-h-screen'>
-          <p>Carregando...</p>
-        </div>
-      </ThemeProvider>
-    );
-
   return (
     <ThemeProvider defaultTheme='dark' storageKey='vite-ui-theme'>
-      <div className='flex items-center justify-center min-h-screen p-4'>
-        <Card className='w-full max-w-md'>
-          <CardHeader>
-            <CardTitle className='text-2xl'>
-              {hasVault ? '🔐 Login no Cofre' : '🆕 Criar Novo Cofre'}
-            </CardTitle>
-            <CardDescription>
-              {hasVault
-                ? 'Digite sua Senha Mestra para abrir.'
-                : 'Defina uma Senha Mestra para criptografar seus dados.'}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className='space-y-4'>
-              <div className='space-y-2'>
-                <Label htmlFor='password'>Senha Mestra</Label>
-                <Input
-                  id='password'
-                  type='password'
-                  placeholder='Digite sua senha...'
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  disabled={isLoading}
-                  required
-                />
-              </div>
-              <Button type='submit' className='w-full' disabled={isLoading}>
-                {isLoading
-                  ? 'Processando...'
-                  : hasVault
-                    ? 'Abrir Cofre'
-                    : 'Criar Cofre'}
-              </Button>
-              {status && (
-                <p className='text-sm text-center text-muted-foreground mt-2'>
-                  {status}
-                </p>
-              )}
-            </form>
-          </CardContent>
-        </Card>
-      </div>
+      <TitleBar />
+
+      {isLoggedIn ? (
+        <div className='pt-10'>
+          <div className='fixed bottom-4 right-4 z-40'>
+            <Button
+              variant='outline'
+              size='icon'
+              onClick={() => {
+                setIsLoggedIn(false);
+                setPassword('');
+                setStatus('💤 Sessão fechada.');
+              }}
+              title='Trancar cofre'
+            >
+              <Lock className='h-5 w-5' />
+            </Button>
+          </div>
+          <Dashboard />
+        </div>
+      ) : hasVault === null ? (
+        <div className='flex items-center justify-center min-h-screen pt-10'>
+          <p>Carregando...</p>
+        </div>
+      ) : (
+        <div className='flex items-center justify-center min-h-screen p-4 pt-10'>
+          <Card className='w-full max-w-md'>
+            <CardHeader>
+              <CardTitle className='text-2xl'>
+                {hasVault ? '🔐 Login no Cofre' : '🆕 Criar Novo Cofre'}
+              </CardTitle>
+              <CardDescription>
+                {hasVault
+                  ? 'Digite sua Senha Mestra para abrir.'
+                  : 'Defina uma Senha Mestra para criptografar seus dados.'}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit} className='space-y-4'>
+                <div className='space-y-2'>
+                  <Label htmlFor='password'>Senha Mestra</Label>
+                  <Input
+                    id='password'
+                    type='password'
+                    placeholder='Digite sua senha...'
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    disabled={isLoading}
+                    required
+                  />
+                </div>
+                <Button type='submit' className='w-full' disabled={isLoading}>
+                  {isLoading
+                    ? 'Processando...'
+                    : hasVault
+                      ? 'Abrir Cofre'
+                      : 'Criar Cofre'}
+                </Button>
+                {status && (
+                  <p className='text-sm text-center text-muted-foreground mt-2'>
+                    {status}
+                  </p>
+                )}
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      <Toaster />
     </ThemeProvider>
   );
 }
