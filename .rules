@@ -1,0 +1,86 @@
+# Project Rules & Best Practices
+
+## Tech Stack
+- **Frontend:** React 19 (RC/Latest), TypeScript 5.x, Vite, Tailwind CSS v4, Shadcn/UI.
+- **Backend:** Rust (Cargo 1.91.1), Tauri v2.
+- **Database:** SQLite (via `rusqlite` + `sqlcipher`).
+- **Package Manager:** Bun.
+
+---
+
+## 1. Frontend: React 19 & TypeScript
+
+### Component Architecture
+- **Functional Components:** Always use functional components with named exports.
+- **Co-location:** Keep components, specific hooks, and utils close to where they are used.
+- **Props Interface:** Always define a `Props` interface/type. Use `ComponentProps<type>` when extending native elements.
+
+### React 19 Modern Patterns (STRICT)
+- **No `forwardRef`:** In React 19, `ref` is a prop. Do NOT use `forwardRef`. Just accept `ref` in the props interface.
+- **Context:** Use `<Context>` directly instead of `<Context.Provider>`.
+- **Async Handling:** Prefer the `use` hook for consuming Promises and Contexts conditionally.
+- **Form Actions:**
+  - Use **React Actions** (`action={myFunction}`) for forms instead of `onSubmit` manual handlers.
+  - Use `useActionState` for handling form state/errors.
+  - Use `useFormStatus` for loading states inside forms (pending).
+  - **Avoid** `useEffect` for data fetching. Prefer data loaders or suspending components.
+
+- **Suspense over `isLoading`:**
+  - Do NOT create manual boolean states for data fetching (e.g., `const [loading, setLoading] = useState(true)`).
+  - Use `<Suspense fallback={<Skeleton />}>` boundaries around components that perform async operations using the `use` API.
+  - This applies to loading Lists, Secret Details, and Attachments.
+
+- **Activity (Keep Alive):**
+  - **Use `<Activity mode="hidden">`** instead of conditional rendering (`isOpen && <Component />`) for high-frequency toggleable UI.
+  - **Use Cases in this project:**
+    - Switching between Sidebar tabs (Secrets vs. Projects).
+    - Keeping the "Search Results" alive while viewing a Detail Modal.
+    - Preserving Form state if the user temporarily switches views.
+  - **Goal:** Preserve component state (scroll position, input values) when visually hidden.
+
+- **Optimistic Updates:**
+  - Use `useOptimistic` for immediate UI feedback on mutations (e.g., when renaming a secret or deleting an attachment, remove it from the list instantly before the Rust command confirms).
+
+### TypeScript Strictness
+- **No `any`:** usage of `any` is strictly forbidden. Use `unknown` if necessary and narrow the type.
+- **Events:** Use specific event types (e.g., `React.ChangeEvent<HTMLInputElement>`) instead of `any`.
+- **Tauri Types:** When invoking commands, always type the generic return: `invoke<MyReturnType>('command_name')`.
+
+### Styling (Tailwind v4)
+- **Zero Runtime:** Use standard Tailwind v4 classes.
+- **Shadcn Compatibility:** Maintain the `cn()` utility for class merging.
+- **CSS Variables:** Define theme variables in the CSS `@layer base`, not in JS config objects (Tailwind v4 standard).
+
+---
+
+## 2. Backend: Rust & Tauri
+
+### Rust Best Practices (Cargo 1.91.1)
+- **Error Handling:**
+  - **NEVER** use `.unwrap()` in production/command code.
+  - Use `?` operator for error propagation.
+  - Use `map_err` to convert internal errors (like database errors) into Strings friendly to the frontend.
+  - Return `Result<T, String>` for all Tauri commands.
+- **Concurrency:**
+  - Use `std::sync::Mutex` or `tokio::sync::Mutex` correctly to protect the `AppState`.
+  - Always handle "Lock Poisoning" or map the error if the lock fails.
+- **Tauri Commands:**
+  - Macros: Always annotate with `#[tauri::command]`.
+  - State Injection: Use `state: State<'_, AppState>` as the first argument.
+  - Arguments: Use `serde` compatible types. For binary data, prefer `Vec<u8>` (maps to `Uint8Array` in JS).
+
+### Modules & Organization
+- **Separation of Concerns:**
+  - `commands/`: Only the logic callable by frontend.
+  - `models/`: Structs (Serialize/Deserialize). Separate "View Models" (Metadata) from "Domain Models" (Full Data).
+  - `database/`: SQL queries and connection logic.
+- **SQL:**
+  - Do not hardcode SQL strings inside Rust logic if complex. Use `include_str!` with `.sql` files in `migrations/`.
+  - Always use parameterized queries (`?1`, `?2` or `params![]`) to prevent SQL Injection.
+
+---
+
+## 3. General Philosophy (Local-First)
+- **Security First:** Passwords and Secrets never leave `rusqlite` without encryption.
+- **Performance:** Large lists must use virtualization. Large files must be streamed or handled via chunks/references, avoiding passing huge Base64 strings through the Tauri bridge.
+- **Clean Code:** Delete unused code immediately. Comments should explain "Why", not "What".

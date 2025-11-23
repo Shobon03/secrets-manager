@@ -54,7 +54,7 @@ export function TitleBar() {
             onClick={handleMinimize}
             title='Minimizar'
           >
-            <Minus size={16} />
+            <Minus className='w-5! h-5!' />
           </Button>
 
           <Button
@@ -65,9 +65,9 @@ export function TitleBar() {
             title={isMaximized ? 'Restaurar' : 'Maximizar'}
           >
             {isMaximized ? (
-              <Square size={14} className='rotate-45' />
+              <Square className='w-3.5! h-3.5! rotate-45' />
             ) : (
-              <Square size={14} />
+              <Square className='w-3.5! h-3.5!' />
             )}
           </Button>
 

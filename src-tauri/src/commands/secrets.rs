@@ -8,17 +8,24 @@ pub fn create_secret(
     username: String,
     password: String,
     state: State<'_, AppState>,
-) -> Result<String, String> {
+) -> Result<Secret, String> {
     let lock = state.db.lock().map_err(|_| "Falha no Mutex".to_string())?;
     let conn = lock.as_ref().ok_or("Cofre fechado! Faça login primeiro.")?;
 
     conn.execute(
         "INSERT INTO secrets (title, username, password_blob) VALUES (?1, ?2, ?3)",
-        (title, username, password.as_bytes()),
+        (title.clone(), username.clone(), password.as_bytes()),
     )
     .map_err(|e| format!("Erro ao salvar segredo: {}", e))?;
 
-    Ok("Segredo salvo!".to_string())
+    let id = conn.last_insert_rowid();
+
+    Ok(Secret {
+        id,
+        title,
+        username,
+        password,
+    })
 }
 
 #[tauri::command]

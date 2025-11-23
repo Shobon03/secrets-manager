@@ -66,7 +66,7 @@ pub fn unlock_vault(
 
     let db_path = get_db_path(&app_handle)?;
     let conn = initialize_database(&db_path, &key)
-        .map_err(|e| format!("Senha incorreta ou erro no banco: {}", e))?;
+        .map_err(|_| "Senha incorreta".to_string())?;
 
     *state.db.lock().map_err(|_| "Falha no Mutex".to_string())? = Some(conn);
 
