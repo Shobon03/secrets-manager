@@ -2,8 +2,9 @@
 CREATE TABLE IF NOT EXISTS secrets (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
+    description TEXT,
     username TEXT,
-    password_blob BLOB NOT NULL, -- Alterado para BLOB conforme seu snippet (bom para dados criptografados)
+    password_blob BLOB NULL, -- Alterado para BLOB conforme seu snippet (bom para dados criptografados)
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 

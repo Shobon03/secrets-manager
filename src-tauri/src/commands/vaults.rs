@@ -7,21 +7,17 @@ use crate::utils::{get_db_path, get_meta_path};
 use std::fs;
 use std::fs::File;
 use std::io::Write;
-use tauri::{AppHandle, State};
+use tauri::State;
 
 #[tauri::command]
-pub fn check_vault_status(app_handle: AppHandle) -> Result<bool, String> {
-    let meta_path = get_meta_path(&app_handle)?;
+pub fn check_vault_status() -> Result<bool, String> {
+    let meta_path = get_meta_path()?;
     Ok(meta_path.exists())
 }
 
 #[tauri::command]
-pub fn setup_vault(
-    password: String,
-    app_handle: AppHandle,
-    state: State<'_, AppState>,
-) -> Result<String, String> {
-    let meta_path = get_meta_path(&app_handle)?;
+pub fn setup_vault(password: String, state: State<'_, AppState>) -> Result<String, String> {
+    let meta_path = get_meta_path()?;
 
     if meta_path.exists() {
         return Err("Um cofre já existe neste computador.".to_string());
@@ -31,7 +27,7 @@ pub fn setup_vault(
 
     fs::write(&meta_path, &salt).map_err(|e| format!("Erro ao salvar meta: {}", e))?;
 
-    let db_path = get_db_path(&app_handle)?;
+    let db_path = get_db_path()?;
     if db_path.exists() {
         println!("Limpando banco de dados antigo em {:?}", db_path);
         fs::remove_file(&db_path).map_err(|e| format!("Erro ao limpar banco: {}", e))?;
@@ -48,12 +44,8 @@ pub fn setup_vault(
 }
 
 #[tauri::command]
-pub fn unlock_vault(
-    password: String,
-    app_handle: AppHandle,
-    state: State<'_, AppState>,
-) -> Result<String, String> {
-    let meta_path = get_meta_path(&app_handle)?;
+pub fn unlock_vault(password: String, state: State<'_, AppState>) -> Result<String, String> {
+    let meta_path = get_meta_path()?;
 
     if !meta_path.exists() {
         return Err("Nenhum cofre encontrado. Crie um primeiro.".to_string());
@@ -64,9 +56,8 @@ pub fn unlock_vault(
 
     let key = derive_key_from_password(&password, &salt).map_err(|e| e.to_string())?;
 
-    let db_path = get_db_path(&app_handle)?;
-    let conn = initialize_database(&db_path, &key)
-        .map_err(|_| "Senha incorreta".to_string())?;
+    let db_path = get_db_path()?;
+    let conn = initialize_database(&db_path, &key).map_err(|_| "Senha incorreta".to_string())?;
 
     *state.db.lock().map_err(|_| "Falha no Mutex".to_string())? = Some(conn);
 
@@ -86,10 +77,9 @@ pub fn lock_vault(state: State<'_, AppState>) -> Result<String, String> {
 pub fn export_vault(
     file_path: String,
     password: String,
-    app_handle: AppHandle,
     state: State<'_, AppState>,
 ) -> Result<String, String> {
-    let meta_path = get_meta_path(&app_handle)?;
+    let meta_path = get_meta_path()?;
     let salt = fs::read_to_string(&meta_path).map_err(|_| "Erro ao ler salt".to_string())?;
 
     let key = derive_key_from_password(&password, &salt).map_err(|e| e.to_string())?;
@@ -111,12 +101,11 @@ pub fn export_vault(
 pub fn import_vault(
     file_path: String,
     password: String,
-    app_handle: AppHandle,
     state: State<'_, AppState>,
 ) -> Result<String, String> {
     let encrypted_bytes =
         fs::read(&file_path).map_err(|e| format!("Erro ao ler arquivo: {}", e))?;
-    let meta_path = get_meta_path(&app_handle)?;
+    let meta_path = get_meta_path()?;
     let salt = fs::read_to_string(&meta_path).map_err(|_| "Erro ao ler salt".to_string())?;
     let key = derive_key_from_password(&password, &salt).map_err(|e| e.to_string())?;
 

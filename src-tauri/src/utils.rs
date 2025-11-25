@@ -1,23 +1,27 @@
-use std::{fs, path::PathBuf};
-use tauri::{AppHandle, Manager};
+use std::{env, fs, path::PathBuf};
 
-pub fn get_meta_path(app_handle: &AppHandle) -> Result<PathBuf, String> {
-    let app_dir = app_handle
-        .path()
-        .app_data_dir()
-        .map_err(|e| e.to_string())?;
+fn get_vaults_dir() -> Result<PathBuf, String> {
+    let home_dir = env::var("HOME")
+        .or_else(|_| env::var("USERPROFILE"))
+        .map_err(|_| "Não foi possível determinar o diretório home")?;
 
-    if !app_dir.exists() {
-        fs::create_dir_all(&app_dir).map_err(|e| e.to_string())?;
+    let vaults_dir = PathBuf::from(home_dir)
+        .join(".secrets-manager")
+        .join("vaults");
+
+    if !vaults_dir.exists() {
+        fs::create_dir_all(&vaults_dir).map_err(|e| format!("Erro ao criar diretório: {}", e))?;
     }
 
-    Ok(app_dir.join("vault.meta"))
+    Ok(vaults_dir)
 }
 
-pub fn get_db_path(app_handle: &AppHandle) -> Result<PathBuf, String> {
-    let app_dir = app_handle
-        .path()
-        .app_data_dir()
-        .map_err(|e| e.to_string())?;
-    Ok(app_dir.join("vault.db"))
+pub fn get_meta_path() -> Result<PathBuf, String> {
+    let vaults_dir = get_vaults_dir()?;
+    Ok(vaults_dir.join("vault.meta"))
+}
+
+pub fn get_db_path() -> Result<PathBuf, String> {
+    let vaults_dir = get_vaults_dir()?;
+    Ok(vaults_dir.join("vault.db"))
 }

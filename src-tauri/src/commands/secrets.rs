@@ -25,6 +25,8 @@ pub fn create_secret(
         title,
         username,
         password,
+        created_at: chrono::Utc::now().to_rfc3339(),
+        project_id: None,
     })
 }
 
@@ -34,7 +36,7 @@ pub fn get_all_secrets(state: State<'_, AppState>) -> Result<Vec<Secret>, String
     let conn = lock.as_ref().ok_or("Cofre fechado! Faça login primeiro.")?;
 
     let mut stmt = conn
-        .prepare("SELECT id, title, username, password_blob FROM secrets")
+        .prepare("SELECT id, title, username, password_blob, created_at FROM secrets")
         .map_err(|e| format!("Erro ao obter secretos: {}", e))?;
 
     let secrets_iter = stmt
@@ -47,6 +49,8 @@ pub fn get_all_secrets(state: State<'_, AppState>) -> Result<Vec<Secret>, String
                 title: row.get(1)?,
                 username: row.get(2)?,
                 password: pass_str,
+                created_at: row.get(4)?,
+                project_id: None,
             })
         })
         .map_err(|e| format!("Erro ao obter secretos: {}", e))?;
