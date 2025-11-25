@@ -105,6 +105,10 @@ export function SecretCard({
               </Button>
             </div>
           </div>
+          <small className='text-xs text-muted-foreground'>
+            Criado em:{' '}
+            <span>{new Date(secret.created_at).toLocaleString('pt-BR')}</span>
+          </small>
         </div>
       </CardContent>
     </Card>

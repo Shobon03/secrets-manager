@@ -1,7 +1,13 @@
 import { invoke } from '@tauri-apps/api/core';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import { open, save } from '@tauri-apps/plugin-dialog';
-import { HardDriveDownload, HardDriveUpload, Plus } from 'lucide-react';
+import {
+  HardDriveDownload,
+  HardDriveUpload,
+  Plus,
+  Key,
+  FolderPlus,
+} from 'lucide-react';
 import {
   Suspense,
   startTransition,
@@ -28,8 +34,15 @@ import {
 } from '../components/ui/alert-dialog';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '../components/ui/dropdown-menu';
 import { Spinner } from '../components/ui/spinner';
 import type { Secret } from '../types';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 
 // Cache para gerenciar o estado da Promise
 let secretsCache: Promise<Secret[]> | null = null;
@@ -38,6 +51,8 @@ let secretsData: Secret[] | null = null;
 function loadSecretsPromise(): Promise<Secret[]> {
   if (!secretsCache) {
     secretsCache = invoke<Secret[]>('get_all_secrets').then((data) => {
+      console.log(data);
+
       secretsData = data;
       return data;
     });
@@ -375,7 +390,7 @@ export function Dashboard() {
               {isImporting ? (
                 <Spinner className='h-5 w-5' />
               ) : (
-                <HardDriveUpload className='h-5 w-5' />
+                <HardDriveDownload className='h-5 w-5' />
               )}
             </Button>
             <Button
@@ -388,20 +403,54 @@ export function Dashboard() {
               {isExporting ? (
                 <Spinner className='h-5 w-5' />
               ) : (
-                <HardDriveDownload className='h-5 w-5' />
+                <HardDriveUpload className='h-5 w-5' />
               )}
             </Button>
-            <Button
-              variant='default'
-              size='icon'
-              onClick={() => setIsCreateSecret((prev) => !prev)}
-              title='Novo login'
-              disabled={isPendingAdd || isPendingEdit}
-            >
-              <Plus className='h-5 w-5' />
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant='default'
+                  size='icon'
+                  title='Adicionar novo'
+                  disabled={isPendingAdd || isPendingEdit}
+                >
+                  <Plus className='h-5 w-5' />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align='end'>
+                <DropdownMenuItem onClick={() => setIsCreateSecret(true)}>
+                  <Key className='h-4 w-4' />
+                  Segredo
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => toast.info('Em breve!')}>
+                  <FolderPlus className='h-4 w-4' />
+                  Projeto
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
+
+        <Tabs defaultValue='secrets' className='mb-6'>
+          <TabsList>
+            <TabsTrigger value='secrets'>Segredos</TabsTrigger>
+            <TabsTrigger value='projects'>Projetos</TabsTrigger>
+          </TabsList>
+          <TabsContent value='secrets'>
+            <div className='space-y-4' key={refreshKey}>
+              <Suspense fallback={<SecretsListSkeleton />}>
+                <SecretsList
+                  onCopy={copyToClipboard}
+                  onEdit={handleEditSecret}
+                  onDeleteClick={handleDeleteClick}
+                />
+              </Suspense>
+            </div>
+          </TabsContent>
+          <TabsContent value='projects'>
+            <p>oi projetos</p>
+          </TabsContent>
+        </Tabs>
 
         <SecretForm
           open={isCreateSecret || isEditSecret}
@@ -414,16 +463,6 @@ export function Dashboard() {
           onCancel={handleCancel}
           isPending={isEditSecret ? isPendingEdit : isPendingAdd}
         />
-
-        <div className='space-y-4' key={refreshKey}>
-          <Suspense fallback={<SecretsListSkeleton />}>
-            <SecretsList
-              onCopy={copyToClipboard}
-              onEdit={handleEditSecret}
-              onDeleteClick={handleDeleteClick}
-            />
-          </Suspense>
-        </div>
 
         {/* Dialog para Exportar */}
         <PasswordDialog
