@@ -1,27 +1,11 @@
-import { invoke } from '@tauri-apps/api/core';
-import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import { open, save } from '@tauri-apps/plugin-dialog';
-import {
-  HardDriveDownload,
-  HardDriveUpload,
-  Plus,
-  Key,
-  FolderPlus,
-} from 'lucide-react';
-import {
-  Suspense,
-  startTransition,
-  use,
-  useActionState,
-  useRef,
-  useState,
-} from 'react';
+import { startTransition, useActionState, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import type { AttachmentsManagerRef } from '../components/attachments-manager';
+import { DashboardHeader } from '../components/dashboard-header';
+import { DashboardTabs } from '../components/dashboard-tabs';
 import { PasswordDialog } from '../components/password-dialog';
-import { SecretCard } from '../components/secret-card';
 import { SecretForm } from '../components/secret-form';
-import { SecretsListSkeleton } from '../components/secrets-list-skeleton';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,83 +16,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '../components/ui/alert-dialog';
-import { Button } from '../components/ui/button';
-import { Card, CardContent } from '../components/ui/card';
+import { copyToClipboard } from '../functions/clipboard';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '../components/ui/dropdown-menu';
-import { Spinner } from '../components/ui/spinner';
-import type { Secret } from '../types';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-
-// Cache para gerenciar o estado da Promise
-let secretsCache: Promise<Secret[]> | null = null;
-let secretsData: Secret[] | null = null;
-
-function loadSecretsPromise(): Promise<Secret[]> {
-  if (!secretsCache) {
-    secretsCache = invoke<Secret[]>('get_all_secrets').then((data) => {
-      console.log(data);
-
-      secretsData = data;
-      return data;
-    });
-  }
-  return secretsCache;
-}
-
-// Invalidar o cache quando necessário
-export function invalidateSecretsCache() {
-  secretsCache = null;
-  secretsData = null;
-}
-
-// Obter dados síncronos do cache (para editar)
-function getSecretsFromCache(): Secret[] | null {
-  return secretsData;
-}
-
-// Componente que suspende enquanto carrega secrets
-function SecretsList({
-  onCopy,
-  onEdit,
-  onDeleteClick,
-}: {
-  onCopy: (text: string) => Promise<void>;
-  onEdit: (id: number) => void;
-  onDeleteClick: (id: number) => void;
-}) {
-  const secrets = use(loadSecretsPromise());
-
-  if (secrets.length === 0) {
-    return (
-      <Card>
-        <CardContent className='py-12 text-center text-muted-foreground'>
-          Nenhum segredo salvo ainda. Clique no botão + para adicionar seu
-          primeiro login!
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <>
-      {secrets.map((s) => (
-        <SecretCard
-          key={s.id}
-          secret={s}
-          onCopy={onCopy}
-          onEdit={onEdit}
-          onDelete={onDeleteClick}
-          isDeleting={false}
-        />
-      ))}
-    </>
-  );
-}
+  createSecret,
+  updateSecret,
+  deleteSecret,
+  invalidateSecretsCache,
+  getSecretsFromCache,
+} from '../functions/secrets';
+import { exportVault, importVault } from '../functions/vault';
 
 export function Dashboard() {
   const [form, setForm] = useState({ title: '', username: '', password: '' });
@@ -153,11 +69,7 @@ export function Dashboard() {
     const password = formData.get('password') as string;
 
     try {
-      const result = await invoke<Secret>('create_secret', {
-        title,
-        username,
-        password,
-      });
+      const result = await createSecret(title, username, password);
 
       // Salva anexos pendentes se houver
       if (attachmentsManagerRef.current?.hasPendingAttachments()) {
@@ -184,14 +96,12 @@ export function Dashboard() {
     const password = formData.get('password') as string;
 
     try {
-      const updateData = { title, username, password, id: editSecretId };
-      await invoke<void>('update_secret', updateData);
+      if (!editSecretId) return null;
+
+      await updateSecret(editSecretId, title, username, password);
 
       // Salva anexos pendentes se houver
-      if (
-        editSecretId &&
-        attachmentsManagerRef.current?.hasPendingAttachments()
-      ) {
+      if (attachmentsManagerRef.current?.hasPendingAttachments()) {
         await attachmentsManagerRef.current.savePendingAttachments(
           editSecretId,
         );
@@ -226,7 +136,7 @@ export function Dashboard() {
     setShowDeleteDialog(false);
 
     try {
-      await invoke<void>('delete_secret', { id });
+      await deleteSecret(id);
       setForm({ title: '', username: '', password: '' });
       refreshSecrets();
       toast.success('Segredo deletado com sucesso!');
@@ -237,9 +147,9 @@ export function Dashboard() {
     }
   }
 
-  async function copyToClipboard(text: string) {
+  async function handleCopy(text: string) {
     try {
-      await writeText(text);
+      await copyToClipboard(text);
       toast.success('Copiado para a área de transferência!');
     } catch (e) {
       toast.error(`Erro ao copiar: ${e}`);
@@ -273,10 +183,7 @@ export function Dashboard() {
       }
 
       // Exporta com a senha e o caminho
-      await invoke<void>('export_vault', {
-        filePath,
-        password: dialogPassword,
-      });
+      await exportVault(filePath, dialogPassword);
 
       toast.success('Backup exportado com sucesso!');
       setShowExportDialog(false);
@@ -323,10 +230,7 @@ export function Dashboard() {
 
     try {
       // Importa com a senha e o caminho
-      const msg = await invoke<string>('import_vault', {
-        filePath: pendingImportFilePath,
-        password: dialogPassword,
-      });
+      const msg = await importVault(pendingImportFilePath, dialogPassword);
 
       toast.success(msg);
       refreshSecrets();
@@ -377,80 +281,22 @@ export function Dashboard() {
   return (
     <div className='absolute top-10 bottom-0 left-0 right-0 overflow-y-scroll'>
       <div className='container mx-auto p-6 pb-20 max-w-6xl'>
-        <div className='flex items-center justify-between mb-6'>
-          <h2 className='text-3xl font-bold'>🔐 Meus Segredos</h2>
-          <div className='flex gap-2'>
-            <Button
-              variant='outline'
-              size='icon'
-              onClick={handleImport}
-              title='Importar Cofre'
-              disabled={isImporting || isExporting}
-            >
-              {isImporting ? (
-                <Spinner className='h-5 w-5' />
-              ) : (
-                <HardDriveDownload className='h-5 w-5' />
-              )}
-            </Button>
-            <Button
-              variant='outline'
-              size='icon'
-              onClick={handleExport}
-              title='Exportar Cofre'
-              disabled={isImporting || isExporting}
-            >
-              {isExporting ? (
-                <Spinner className='h-5 w-5' />
-              ) : (
-                <HardDriveUpload className='h-5 w-5' />
-              )}
-            </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant='default'
-                  size='icon'
-                  title='Adicionar novo'
-                  disabled={isPendingAdd || isPendingEdit}
-                >
-                  <Plus className='h-5 w-5' />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align='end'>
-                <DropdownMenuItem onClick={() => setIsCreateSecret(true)}>
-                  <Key className='h-4 w-4' />
-                  Segredo
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => toast.info('Em breve!')}>
-                  <FolderPlus className='h-4 w-4' />
-                  Projeto
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
+        <DashboardHeader
+          onImport={handleImport}
+          onExport={handleExport}
+          onCreateSecret={() => setIsCreateSecret(true)}
+          isImporting={isImporting}
+          isExporting={isExporting}
+          isPendingAdd={isPendingAdd}
+          isPendingEdit={isPendingEdit}
+        />
 
-        <Tabs defaultValue='secrets' className='mb-6'>
-          <TabsList>
-            <TabsTrigger value='secrets'>Segredos</TabsTrigger>
-            <TabsTrigger value='projects'>Projetos</TabsTrigger>
-          </TabsList>
-          <TabsContent value='secrets'>
-            <div className='space-y-4' key={refreshKey}>
-              <Suspense fallback={<SecretsListSkeleton />}>
-                <SecretsList
-                  onCopy={copyToClipboard}
-                  onEdit={handleEditSecret}
-                  onDeleteClick={handleDeleteClick}
-                />
-              </Suspense>
-            </div>
-          </TabsContent>
-          <TabsContent value='projects'>
-            <p>oi projetos</p>
-          </TabsContent>
-        </Tabs>
+        <DashboardTabs
+          refreshKey={refreshKey}
+          onCopy={handleCopy}
+          onEdit={handleEditSecret}
+          onDeleteClick={handleDeleteClick}
+        />
 
         <SecretForm
           open={isCreateSecret || isEditSecret}
