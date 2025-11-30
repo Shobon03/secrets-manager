@@ -19,6 +19,7 @@ interface AppSidebarProps {
   currentView: SidebarView;
   onViewChange: (view: SidebarView) => void;
   onLogout: () => void;
+  onSettingsClick: () => void;
   title: string;
   titleIcon?: React.ReactNode;
 }
@@ -27,6 +28,7 @@ export function AppSidebar({
   currentView,
   onViewChange,
   onLogout,
+  onSettingsClick,
   title,
   titleIcon,
 }: AppSidebarProps) {
@@ -44,7 +46,7 @@ export function AppSidebar({
           <Button
             type='button'
             onClick={toggleSidebar}
-            className='size-10 flex items-center justify-center rounded-md hover:bg-sidebar-accent cursor-pointer shrink-0 bg-transparent text-white'
+            className='size-10 flex items-center justify-center rounded-md hover:bg-sidebar-accent cursor-pointer shrink-0 bg-transparent text-black dark:text-white'
             title='Toggle Sidebar'
           >
             {state === 'expanded' ? (
@@ -112,7 +114,7 @@ export function AppSidebar({
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
-              onClick={() => console.log('Settings clicked')}
+              onClick={onSettingsClick}
               tooltip='Configurações'
               size='lg'
               className='[&>svg]:size-5'

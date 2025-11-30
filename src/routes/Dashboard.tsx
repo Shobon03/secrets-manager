@@ -7,7 +7,7 @@ import {
   Plus,
   Trash2,
 } from 'lucide-react';
-import { startTransition, use, useOptimistic, useState } from 'react';
+import { useEffect, useOptimistic, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { AppSidebar, type SidebarView } from '../components/app-sidebar';
 import { PasswordDialog } from '../components/password-dialog';
@@ -15,6 +15,7 @@ import { ProjectForm } from '../components/project-form';
 import { ProjectList } from '../components/project-list';
 import { SecretForm } from '../components/secret-form';
 import { SecretList } from '../components/secret-list';
+import { SettingsDialog } from '../components/settings-dialog';
 import { type TrashItem, TrashList } from '../components/trash-list';
 import {
   AlertDialog,
@@ -73,27 +74,82 @@ function dashboardReducer(state: Secret[], action: OptimisticAction): Secret[] {
 function DashboardContent({ onLogout }: { onLogout: () => void }) {
   const [currentView, setCurrentView] = useState<SidebarView>('secrets');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
-  // Trigger para forçar re-render após mutations
-  const [_, setRefreshKey] = useState(0);
+  const [isPending, startTransition] = useTransition();
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
-  // Carregar dados (Suspense)
-  const initialSecrets = use(loadSecretsPromise());
-  const initialProjects = use(loadProjectsPromise());
-  const deletedSecrets = use(loadDeletedSecretsPromise());
-  const deletedProjects = use(loadDeletedProjectsPromise());
+  // Estados para dados carregados
+  const [secrets, setSecrets] = useState<Secret[]>([]);
+  const [projects, setProjects] = useState<
+    Array<{ id: number; name: string; emoji: string; deletedAt: string | null }>
+  >([]);
+  const [deletedSecrets, setDeletedSecrets] = useState<Secret[]>([]);
+  const [deletedProjects, setDeletedProjects] = useState<
+    Array<{ id: number; name: string; emoji: string; deletedAt: string | null }>
+  >([]);
 
   // Estado Otimista (apenas Segredos por enquanto)
   const [optimisticSecrets, addOptimisticSecret] = useOptimistic(
-    initialSecrets,
+    secrets,
     dashboardReducer,
   );
 
-  function refreshAll() {
+  // Carregar dados iniciais
+  useEffect(() => {
+    async function loadInitialData() {
+      try {
+        const [
+          secretsData,
+          projectsData,
+          deletedSecretsData,
+          deletedProjectsData,
+        ] = await Promise.all([
+          loadSecretsPromise(),
+          loadProjectsPromise(),
+          loadDeletedSecretsPromise(),
+          loadDeletedProjectsPromise(),
+        ]);
+
+        setSecrets(secretsData);
+        setProjects(projectsData);
+        setDeletedSecrets(deletedSecretsData);
+        setDeletedProjects(deletedProjectsData);
+        setIsInitialLoad(false);
+      } catch (error) {
+        toast.error(`Erro ao carregar dados: ${error}`);
+        setIsInitialLoad(false);
+      }
+    }
+
+    loadInitialData();
+  }, []);
+
+  async function refreshAll() {
     invalidateSecretsCache();
     invalidateProjectsCache();
-    startTransition(() => {
-      setRefreshKey((prev) => prev + 1);
+
+    startTransition(async () => {
+      try {
+        const [
+          secretsData,
+          projectsData,
+          deletedSecretsData,
+          deletedProjectsData,
+        ] = await Promise.all([
+          loadSecretsPromise(),
+          loadProjectsPromise(),
+          loadDeletedSecretsPromise(),
+          loadDeletedProjectsPromise(),
+        ]);
+
+        setSecrets(secretsData);
+        setProjects(projectsData);
+        setDeletedSecrets(deletedSecretsData);
+        setDeletedProjects(deletedProjectsData);
+      } catch (error) {
+        toast.error(`Erro ao atualizar dados: ${error}`);
+      }
     });
   }
 
@@ -127,7 +183,7 @@ function DashboardContent({ onLogout }: { onLogout: () => void }) {
 
   // Filtragem de Views
   const activeSecrets = optimisticSecrets.filter((s) => !s.deletedAt);
-  const activeProjects = initialProjects.filter((p) => !p.deletedAt);
+  const activeProjects = projects.filter((p) => !p.deletedAt);
 
   const trashItems: TrashItem[] = [
     ...deletedSecrets.map((s) => ({ ...s, type: 'secret' as const })),
@@ -196,6 +252,7 @@ function DashboardContent({ onLogout }: { onLogout: () => void }) {
         currentView={currentView}
         onViewChange={setCurrentView}
         onLogout={onLogout}
+        onSettingsClick={() => setShowSettings(true)}
         title={getTitle()}
         titleIcon={getTitleIcon()}
       />
@@ -281,31 +338,72 @@ function DashboardContent({ onLogout }: { onLogout: () => void }) {
 
         {/* Conteúdo Scrollável */}
         <div className='flex-1 overflow-y-auto p-6'>
-          {currentView === 'secrets' && (
-            <SecretList
-              secrets={activeSecrets}
-              onCopy={handleCopy}
-              onEdit={secretForm.openEdit}
-              onDeleteClick={secretDeletion.requestDelete}
-              onCreateClick={secretForm.openCreate}
-            />
-          )}
+          {isInitialLoad ? (
+            <div className='flex items-center justify-center h-full'>
+              <div className='flex flex-col items-center gap-3'>
+                <Spinner className='size-8' />
+                <p className='text-muted-foreground'>Carregando dados...</p>
+              </div>
+            </div>
+          ) : (
+            <>
+              {currentView === 'secrets' && (
+                <>
+                  {isPending && (
+                    <div className='flex items-center justify-center py-8 text-sm text-muted-foreground'>
+                      <Spinner className='size-4 mr-2' />
+                      Atualizando lista...
+                    </div>
+                  )}
+                  {!isPending && (
+                    <SecretList
+                      secrets={activeSecrets}
+                      onCopy={handleCopy}
+                      onEdit={secretForm.openEdit}
+                      onDeleteClick={secretDeletion.requestDelete}
+                      onCreateClick={secretForm.openCreate}
+                    />
+                  )}
+                </>
+              )}
 
-          {currentView === 'projects' && (
-            <ProjectList
-              projects={activeProjects}
-              onEdit={projectForm.openEdit}
-              onDeleteClick={projectDeletion.requestDelete}
-              onCreateClick={projectForm.openCreate}
-            />
-          )}
+              {currentView === 'projects' && (
+                <>
+                  {isPending && (
+                    <div className='flex items-center justify-center py-8 text-sm text-muted-foreground'>
+                      <Spinner className='size-4 mr-2' />
+                      Atualizando lista...
+                    </div>
+                  )}
+                  {!isPending && (
+                    <ProjectList
+                      projects={activeProjects}
+                      onEdit={projectForm.openEdit}
+                      onDeleteClick={projectDeletion.requestDelete}
+                      onCreateClick={projectForm.openCreate}
+                    />
+                  )}
+                </>
+              )}
 
-          {currentView === 'trash' && (
-            <TrashList
-              items={trashItems}
-              onRestore={handleRestoreItem}
-              onDeletePermanently={handleDeletePermanently}
-            />
+              {currentView === 'trash' && (
+                <>
+                  {isPending && (
+                    <div className='flex items-center justify-center py-8 text-sm text-muted-foreground'>
+                      <Spinner className='size-4 mr-2' />
+                      Atualizando lista...
+                    </div>
+                  )}
+                  {!isPending && (
+                    <TrashList
+                      items={trashItems}
+                      onRestore={handleRestoreItem}
+                      onDeletePermanently={handleDeletePermanently}
+                    />
+                  )}
+                </>
+              )}
+            </>
           )}
         </div>
       </SidebarInset>
@@ -452,6 +550,15 @@ function DashboardContent({ onLogout }: { onLogout: () => void }) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <SettingsDialog
+        open={showSettings}
+        onOpenChange={setShowSettings}
+        onExport={vaultBackup.handleExport}
+        onImport={vaultBackup.handleImport}
+        isExporting={vaultBackup.isExporting}
+        isImporting={vaultBackup.isImporting}
+      />
     </SidebarProvider>
   );
 }
