@@ -49,37 +49,44 @@ Um gerenciador de segredos **Local-First**, desenvolvido com foco em segurança 
 
 O projeto segue uma arquitetura modular para escalabilidade:
 
+### Backend (Rust/Tauri)
+
 ```text
 src-tauri/
 ├── src/
-│   ├── commands/              # Lógica de negócios exposta ao Frontend
-│   │   ├── secrets.rs         # CRUD de senhas
-│   │   ├── attachments.rs     # Upload/Download de arquivos
-│   │   └── mod.rs
-│   ├── main.rs                # Entrada principal do aplicativo
-│   ├── models.rs              # Structs e Tipos (DTOs)
-│   ├── database.rs            # Conexão e configuração do SQLCipher
-│   ├── state.rs               # Gerenciamento de Estado Global (Mutex)
-│   ├── utils.rs               # Helpers de Sistema de Arquivos
-│   ├── lib.rs                 # Registro de plugins e comandos
-│   └── security.ts            # Funções de segurança
-├── migrations/                # Scripts SQL embutidos no binário
-│   └── schema.sql
+│   ├── commands/             # Lógica de negócios exposta ao Frontend
+│   ├── main.rs               # Entrada principal do aplicativo
+│   ├── lib.rs                # Registro de plugins e comandos Tauri
+│   ├── models.rs             # Structs e Tipos (DTOs)
+│   ├── database.rs           # Conexão e configuração do SQLCipher
+│   ├── state.rs              # Gerenciamento de Estado Global (Mutex)
+│   ├── security.rs           # Funções de criptografia (Argon2, AES-GCM)
+│   └── utils.rs              # Helpers de Sistema de Arquivos
+├── migrations/               # Migrações do banco de dados SQLite
+├── capabilities/             # Permissões e capabilities do Tauri v2
+├── icons/                    # Ícones multi-plataforma (PNG, ICNS, ICO)
+├── build.rs                  # Script de build customizado
+├── Cargo.toml                # Dependências Rust
+└── tauri.conf.json           # Configuração do Tauri
 ```
+
+### Frontend (React)
 
 ```text
 src/
-├── routes/     # Páginas principais da aplicação
-├── components/ # Componentes reutilizáveis
-│   └── ui/     # Primitivos do Shadcn/UI
-├── hooks/      # Custom Hooks
-├── types/      # Definições de tipos TypeScript
-├── lib/        # Utilitários e helpers
-├── assets/     # Recursos estáticos
-│   ├── css/    # CSS (Tailwind)
-│   └── fonts/  # Fontes
-├── App.tsx     # Aplicação principal
-└── main.tsx    # Entrada principal do aplicativo
+├── routes/                   # Páginas principais da aplicação
+├── components/               # Componentes reutilizáveis
+│   └── ui/                   # Primitivos do Shadcn/UI
+├── hooks/                    # Custom Hooks
+│   └── dashboard/            # Hooks específicos do Dashboard
+├── functions/                # Funções utilitárias e chamadas Tauri
+├── types/                    # Definições de tipos TypeScript
+├── lib/                      # Utilitários e schemas Zod
+├── assets/                   # Recursos estáticos
+│   ├── css/                  # Estilos globais (Tailwind)
+│   └── fonts/                # Fontes (Cabinet, Satoshi)
+├── App.tsx                   # Componente raiz
+└── main.tsx                  # Entrada principal
 ```
 
 ## 🚀 Como Rodar
@@ -119,13 +126,13 @@ _Isso irá compilar o Rust (pode demorar na primeira vez) e abrir a janela do ap
 
 ## 🛣️ Roadmap
 
-- [x] MVP (CRUD + Auth)
-- [x] Criptografia de Arquivos (Anexos)
-- [x] Auto-Lock por inatividade
+- [x] MVP (CRUD + Auth) já rodando.
+- [x] **Criptografia** de Arquivos (Anexos).
+- [x] **Auto-Lock** por inatividade.
+- [x] **Configurações:** Painel de preferências do usuário.
 - [ ] **Grupos/Projetos:** Organização de secrets em pastas.
 - [ ] **TOTP:** Geração de códigos 2FA nativos com timer visual.
 - [ ] **Pesquisa Global:** Busca rápida (Fuzzy Search).
-- [ ] **Configurações:** Painel de preferências do usuário.
 - [ ] **Multiplos arquivos de cofres:** Suporte para múltiplos cofres (compartilhamento de senhas).
 
 ---
