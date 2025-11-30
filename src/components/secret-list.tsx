@@ -1,18 +1,20 @@
-import { use } from 'react';
-import { loadSecretsPromise } from '../functions/secrets';
 import type { Secret } from '../types';
 import { SecretCard } from './secret-card';
 import { Card, CardContent } from './ui/card';
 
 interface SecretListProps {
+  secrets: Secret[];
   onCopy: (text: string) => Promise<void>;
   onEdit: (id: number) => void;
   onDeleteClick: (id: number) => void;
 }
 
-export function SecretList({ onCopy, onEdit, onDeleteClick }: SecretListProps) {
-  const secrets = use(loadSecretsPromise());
-
+export function SecretList({
+  secrets,
+  onCopy,
+  onEdit,
+  onDeleteClick,
+}: SecretListProps) {
   if (secrets.length === 0) {
     return (
       <Card>

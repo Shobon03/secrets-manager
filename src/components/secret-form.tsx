@@ -1,5 +1,6 @@
 import { Eye, EyeOff } from 'lucide-react';
-import { useState } from 'react';
+import { Suspense, use, useState } from 'react';
+import { loadProjectsPromise } from '../functions/projects';
 import type { AttachmentsManagerRef } from './attachments-manager';
 import { AttachmentsManager } from './attachments-manager';
 import { Button } from './ui/button';
@@ -19,7 +20,15 @@ import {
   InputGroupInput,
 } from './ui/input-group';
 import { Label } from './ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from './ui/select';
 import { Separator } from './ui/separator';
+import { Skeleton } from './ui/skeleton';
 import { Spinner } from './ui/spinner';
 
 interface SecretFormProps {
@@ -28,6 +37,7 @@ interface SecretFormProps {
     title: string;
     username: string;
     password: string;
+    projectId?: string;
   };
   isEditMode: boolean;
   editSecretId: number | null;
@@ -36,6 +46,32 @@ interface SecretFormProps {
   formAction: (formData: FormData) => void;
   onCancel: () => void;
   isPending: boolean;
+}
+
+function ProjectSelector({
+  value,
+  onChange,
+}: {
+  value: string | undefined;
+  onChange: (val: string) => void;
+}) {
+  const projects = use(loadProjectsPromise());
+
+  return (
+    <Select value={value || 'no-project'} onValueChange={onChange} name='projectId'>
+      <SelectTrigger>
+        <SelectValue placeholder='Selecione um projeto (opcional)' />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value='no-project'>Nenhum projeto</SelectItem>
+        {projects.map((p) => (
+          <SelectItem key={p.id} value={p.id.toString()}>
+            {p.name}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
 }
 
 export function SecretForm({
@@ -114,6 +150,18 @@ export function SecretForm({
                 </InputGroupButton>
               </InputGroupAddon>
             </InputGroup>
+          </div>
+
+          <div className='space-y-2'>
+            <Label>Projeto</Label>
+            <Suspense fallback={<Skeleton className='h-9 w-full' />}>
+              <ProjectSelector
+                value={form.projectId}
+                onChange={(val) =>
+                  onFormChange('projectId', val === 'no-project' ? null : val)
+                }
+              />
+            </Suspense>
           </div>
 
           <Separator />

@@ -1,11 +1,10 @@
 import {
+  FolderPlus,
   HardDriveDownload,
   HardDriveUpload,
-  Plus,
   Key,
-  FolderPlus,
+  Plus,
 } from 'lucide-react';
-import { toast } from 'sonner';
 import { Button } from './ui/button';
 import {
   DropdownMenu,
@@ -19,6 +18,7 @@ interface DashboardHeaderProps {
   onImport: () => void;
   onExport: () => void;
   onCreateSecret: () => void;
+  onCreateProject: () => void;
   isImporting: boolean;
   isExporting: boolean;
   isPendingAdd: boolean;
@@ -29,6 +29,7 @@ export function DashboardHeader({
   onImport,
   onExport,
   onCreateSecret,
+  onCreateProject,
   isImporting,
   isExporting,
   isPendingAdd,
@@ -80,7 +81,7 @@ export function DashboardHeader({
               <Key className='h-4 w-4' />
               Segredo
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => toast.info('Em breve!')}>
+            <DropdownMenuItem onClick={onCreateProject}>
               <FolderPlus className='h-4 w-4' />
               Projeto
             </DropdownMenuItem>

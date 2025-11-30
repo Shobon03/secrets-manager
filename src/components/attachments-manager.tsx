@@ -50,7 +50,7 @@ function getAttachmentsPromise(
     });
     attachmentsCache.set(secretId, promise);
   }
-  return attachmentsCache.get(secretId)!;
+  return attachmentsCache.get(secretId) as Promise<AttachmentMetadata[]>;
 }
 
 function invalidateAttachmentsCache(secretId: number) {
@@ -78,7 +78,7 @@ function AttachmentsList({
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
+    return `${parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
   };
 
   return (
@@ -247,16 +247,12 @@ export function AttachmentsManager({
   const savePendingAttachments = async (targetSecretId: number) => {
     if (pendingAttachments.length === 0) return;
 
-    try {
-      for (const pending of pendingAttachments) {
-        await uploadFile(pending.file, targetSecretId);
-      }
-      setPendingAttachments([]);
-      invalidateAttachmentsCache(targetSecretId);
-      setRefreshKey((prev) => prev + 1);
-    } catch (error) {
-      throw error;
+    for (const pending of pendingAttachments) {
+      await uploadFile(pending.file, targetSecretId);
     }
+    setPendingAttachments([]);
+    invalidateAttachmentsCache(targetSecretId);
+    setRefreshKey((prev) => prev + 1);
   };
 
   const hasPendingAttachments = () => pendingAttachments.length > 0;
@@ -328,7 +324,7 @@ export function AttachmentsManager({
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
+    return `${parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
   };
 
   const hasAnyAttachments = pendingAttachments.length > 0 || secretId !== null;

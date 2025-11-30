@@ -29,11 +29,13 @@ export async function createSecret(
   title: string,
   username: string,
   password: string,
+  projectId?: number,
 ): Promise<Secret> {
   return await invoke<Secret>('create_secret', {
     title,
     username,
     password,
+    projectId,
   });
 }
 
@@ -42,8 +44,9 @@ export async function updateSecret(
   title: string,
   username: string,
   password: string,
+  projectId?: number,
 ): Promise<void> {
-  const updateData = { title, username, password, id };
+  const updateData = { title, username, password, id, projectId };
   await invoke<void>('update_secret', updateData);
 }
 

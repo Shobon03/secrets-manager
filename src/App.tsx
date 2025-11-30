@@ -21,6 +21,7 @@ import {
 import { Label } from './components/ui/label';
 import { Toaster } from './components/ui/sonner';
 import { useAutoLock } from './hooks/useAutoLock';
+import { vaultSchema } from './lib/schemas';
 import { Dashboard } from './routes/Dashboard';
 
 import './assets/css/global.css';
@@ -74,11 +75,16 @@ function App() {
     _prevState: FormState,
     formData: FormData,
   ): Promise<FormState> {
-    const passwordValue = formData.get('password') as string;
-    if (!passwordValue) {
-      toast.error('Senha é obrigatória');
+    const rawData = { password: formData.get('password') };
+    const validation = vaultSchema.safeParse(rawData);
+
+    if (!validation.success) {
+      const errorMessage = validation.error.errors[0].message;
+      toast.error(errorMessage);
       return { status: '', success: false };
     }
+
+    const { password: passwordValue } = validation.data;
 
     try {
       if (hasVault) {
@@ -103,7 +109,7 @@ function App() {
     }
   }
 
-  const [formState, formAction, isPending] = useActionState<
+  const [_formState, formAction, isPending] = useActionState<
     FormState,
     FormData
   >(handleSubmitAction, { status: '', success: false });
@@ -138,7 +144,15 @@ function App() {
               <Lock className='h-5! w-5!' />
             </Button>
           </div>
-          <Dashboard />
+          <Suspense
+            fallback={
+              <div className='flex items-center justify-center min-h-screen'>
+                <p>Carregando Dashboard...</p>
+              </div>
+            }
+          >
+            <Dashboard />
+          </Suspense>
         </>
       )}
 

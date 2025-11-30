@@ -13,12 +13,12 @@ export interface AttachmentMetadata {
   filename: string;
   mimeType: string;
   fileSize: number;
-  createdAt: string;
+  created_at: string;
 }
 
 export interface Project {
   id: number;
   name: string;
   description?: string;
-  createdAt: string;
+  created_at: string;
 }

@@ -17,6 +17,7 @@ import {
   InputGroupInput,
 } from '../components/ui/input-group';
 import { Label } from '../components/ui/label';
+import { vaultSchema } from '../lib/schemas';
 
 interface LoginPageProps {
   onLogin: () => void;
@@ -64,11 +65,16 @@ export function LoginPage({ onLogin }: LoginPageProps) {
     _prevState: FormState,
     formData: FormData,
   ): Promise<FormState> {
-    const passwordValue = formData.get('password') as string;
-    if (!passwordValue) {
-      toast.error('Senha é obrigatória');
+    const rawData = { password: formData.get('password') };
+    const validation = vaultSchema.safeParse(rawData);
+
+    if (!validation.success) {
+      const errorMessage = validation.error.errors[0].message;
+      toast.error(errorMessage);
       return { status: '', success: false };
     }
+
+    const { password: passwordValue } = validation.data;
 
     try {
       if (hasVault) {
@@ -93,7 +99,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
     }
   }
 
-  const [formState, formAction, isPending] = useActionState<
+  const [_formState, formAction, isPending] = useActionState<
     FormState,
     FormData
   >(handleSubmitAction, { status: '', success: false });
