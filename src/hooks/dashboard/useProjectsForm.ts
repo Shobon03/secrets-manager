@@ -45,7 +45,7 @@ export function useProjectsForm({ onRefresh }: UseProjectsFormProps) {
     const validation = projectSchema.safeParse(rawData);
 
     if (!validation.success) {
-      const errorMessage = validation.error.errors[0].message;
+      const errorMessage = validation.error.issues[0].message;
       toast.error(errorMessage);
       return null;
     }
@@ -75,7 +75,7 @@ export function useProjectsForm({ onRefresh }: UseProjectsFormProps) {
     const validation = projectSchema.safeParse(rawData);
 
     if (!validation.success) {
-      const errorMessage = validation.error.errors[0].message;
+      const errorMessage = validation.error.issues[0].message;
       toast.error(errorMessage);
       return null;
     }

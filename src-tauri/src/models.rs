@@ -1,14 +1,17 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Project {
     pub id: i64,
     pub name: String,
     pub description: Option<String>,
     pub created_at: String,
+    pub deleted_at: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Secret {
     pub id: i64,
     pub title: String,
@@ -16,6 +19,7 @@ pub struct Secret {
     pub project_id: Option<i64>,
     pub password: String,
     pub created_at: String,
+    pub deleted_at: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -30,6 +34,7 @@ pub struct AttachmentMetadata {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Attachment {
     pub id: Option<i64>,
     pub secret_id: i64,

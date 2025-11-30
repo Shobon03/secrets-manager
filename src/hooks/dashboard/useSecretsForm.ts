@@ -56,7 +56,10 @@ export function useSecretsForm({
     formData: FormData,
   ): Promise<null> {
     const projectIdRaw = formData.get('projectId');
-    console.log('projectIdRaw from FormData:', { projectIdRaw, type: typeof projectIdRaw });
+    console.log('projectIdRaw from FormData:', {
+      projectIdRaw,
+      type: typeof projectIdRaw,
+    });
 
     const rawData = {
       title: formData.get('title'),
@@ -76,12 +79,8 @@ export function useSecretsForm({
     if (validation.success === false) {
       console.error('Validation failed:', validation);
       let errorMessage = 'Erro de validação';
-      if (
-        validation.error &&
-        validation.error.errors &&
-        validation.error.errors.length > 0
-      ) {
-        errorMessage = validation.error.errors[0].message;
+      if (validation.error?.issues && validation.error?.issues.length > 0) {
+        errorMessage = validation.error.issues[0].message;
       }
       toast.error(errorMessage);
       return null;
@@ -95,8 +94,8 @@ export function useSecretsForm({
       title,
       username: username || '',
       password,
-      created_at: new Date().toISOString(),
-      project_id: projectId,
+      createdAt: new Date().toISOString(),
+      projectId: projectId,
     };
     onOptimisticCreate?.(tempSecret);
 
@@ -147,12 +146,8 @@ export function useSecretsForm({
     if (validation.success === false) {
       console.error('Validation failed:', validation);
       let errorMessage = 'Erro de validação';
-      if (
-        validation.error &&
-        validation.error.errors &&
-        validation.error.errors.length > 0
-      ) {
-        errorMessage = validation.error.errors[0].message;
+      if (validation.error?.issues && validation.error?.issues.length > 0) {
+        errorMessage = validation.error.issues[0].message;
       }
       toast.error(errorMessage);
       return null;
@@ -164,27 +159,23 @@ export function useSecretsForm({
       if (!editSecretId) return null;
 
       // Optimistic Update
-      const original = getSecretsFromCache()?.find((s) => s.id === editSecretId);
+      const original = getSecretsFromCache()?.find(
+        (s) => s.id === editSecretId,
+      );
       const updatedSecret: Secret = {
         id: editSecretId,
         title,
         username: username || '',
         password,
-        created_at: original?.created_at || new Date().toISOString(),
-        project_id: projectId,
+        createdAt: original?.createdAt || new Date().toISOString(),
+        projectId: projectId,
       };
       onOptimisticUpdate?.(updatedSecret);
-      
+
       // Fecha modal imediatamente
       resetForm();
 
-      await updateSecret(
-        editSecretId,
-        title,
-        username,
-        password,
-        projectId,
-      );
+      await updateSecret(editSecretId, title, username, password, projectId);
 
       if (attachmentsManagerRef.current?.hasPendingAttachments()) {
         await attachmentsManagerRef.current.savePendingAttachments(
@@ -227,7 +218,7 @@ export function useSecretsForm({
         title: editSecret.title,
         username: editSecret.username,
         password: editSecret.password ?? '',
-        projectId: editSecret.project_id?.toString(),
+        projectId: editSecret.projectId?.toString(),
       });
       setIsEditSecret(true);
       setEditSecretId(id);

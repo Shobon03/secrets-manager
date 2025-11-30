@@ -33,7 +33,7 @@ export function ProjectCard({ project, onEdit, onDelete }: ProjectCardProps) {
                 <p className='text-xs text-muted-foreground mt-1'>
                   Criado em{' '}
                   {new Date(
-                    project.created_at.replace(' ', 'T'),
+                    project.createdAt.replace(' ', 'T'),
                   ).toLocaleDateString('pt-BR')}
                 </p>
               </div>

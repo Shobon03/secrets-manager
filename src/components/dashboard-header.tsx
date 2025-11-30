@@ -37,7 +37,10 @@ export function DashboardHeader({
 }: DashboardHeaderProps) {
   return (
     <div className='flex items-center justify-between mb-6'>
-      <h2 className='text-3xl font-bold'>🔐 Meus Segredos</h2>
+      <h2 className='text-3xl font-bold flex items-center gap-2'>
+        <Key className='h-7 w-7' />
+        Meus Segredos
+      </h2>
       <div className='flex gap-2'>
         <Button
           variant='outline'

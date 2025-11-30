@@ -58,7 +58,11 @@ function ProjectSelector({
   const projects = use(loadProjectsPromise());
 
   return (
-    <Select value={value || 'no-project'} onValueChange={onChange} name='projectId'>
+    <Select
+      value={value || 'no-project'}
+      onValueChange={onChange}
+      name='projectId'
+    >
       <SelectTrigger>
         <SelectValue placeholder='Selecione um projeto (opcional)' />
       </SelectTrigger>
@@ -157,9 +161,7 @@ export function SecretForm({
             <Suspense fallback={<Skeleton className='h-9 w-full' />}>
               <ProjectSelector
                 value={form.projectId}
-                onChange={(val) =>
-                  onFormChange('projectId', val === 'no-project' ? null : val)
-                }
+                onChange={(val) => onFormChange('projectId', val)}
               />
             </Suspense>
           </div>

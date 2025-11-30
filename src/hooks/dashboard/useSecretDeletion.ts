@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { deleteSecret } from '../../functions/secrets';
+import { softDeleteSecret } from '../../functions/secrets';
 
 interface UseSecretDeletionProps {
   onRefresh: () => void;
@@ -29,15 +29,15 @@ export function useSecretDeletion({
     onOptimisticDelete?.(id);
 
     try {
-      await deleteSecret(id);
-      toast.success('Segredo deletado com sucesso!');
+      await softDeleteSecret(id);
+      toast.success('Segredo movido para a lixeira!');
       onRefresh();
     } catch (e) {
       toast.error(`Erro ao deletar: ${e}`);
       // Em um cenário ideal, faríamos rollback do optimistic update aqui se falhasse,
       // mas como o refresh vai acontecer de qualquer jeito ou o erro vai estourar,
       // a lista vai acabar voltando ao estado real no próximo fetch.
-      onRefresh(); 
+      onRefresh();
     } finally {
       setPendingDeleteId(null);
     }

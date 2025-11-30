@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { deleteProject } from '../../functions/projects';
+import { softDeleteProject } from '../../functions/projects';
 
 interface UseProjectDeletionProps {
   onRefresh: () => void;
@@ -22,8 +22,8 @@ export function useProjectDeletion({ onRefresh }: UseProjectDeletionProps) {
     setShowDeleteDialog(false);
 
     try {
-      await deleteProject(id);
-      toast.success('Projeto deletado com sucesso!');
+      await softDeleteProject(id);
+      toast.success('Projeto movido para a lixeira!');
       onRefresh();
     } catch (e) {
       toast.error(`Erro ao deletar: ${e}`);

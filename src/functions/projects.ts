@@ -5,6 +5,9 @@ import type { Project } from '../types';
 let projectsCache: Promise<Project[]> | null = null;
 let projectsData: Project[] | null = null;
 
+let deletedProjectsCache: Promise<Project[]> | null = null;
+let deletedProjectsData: Project[] | null = null;
+
 export function loadProjectsPromise(): Promise<Project[]> {
   if (!projectsCache) {
     projectsCache = invoke<Project[]>('get_all_projects').then((data) => {
@@ -15,13 +18,31 @@ export function loadProjectsPromise(): Promise<Project[]> {
   return projectsCache;
 }
 
+export function loadDeletedProjectsPromise(): Promise<Project[]> {
+  if (!deletedProjectsCache) {
+    deletedProjectsCache = invoke<Project[]>('get_deleted_projects').then(
+      (data) => {
+        deletedProjectsData = data;
+        return data;
+      },
+    );
+  }
+  return deletedProjectsCache;
+}
+
 export function invalidateProjectsCache() {
   projectsCache = null;
   projectsData = null;
+  deletedProjectsCache = null;
+  deletedProjectsData = null;
 }
 
 export function getProjectsFromCache(): Project[] | null {
   return projectsData;
+}
+
+export function getDeletedProjectsFromCache(): Project[] | null {
+  return deletedProjectsData;
 }
 
 export async function createProject(
@@ -46,6 +67,14 @@ export async function updateProject(
   });
 }
 
+export async function softDeleteProject(id: number): Promise<void> {
+  await invoke<void>('soft_delete_project', { id });
+}
+
 export async function deleteProject(id: number): Promise<void> {
   await invoke<void>('delete_project', { id });
+}
+
+export async function restoreProject(id: number): Promise<void> {
+  await invoke<void>('restore_project', { id });
 }

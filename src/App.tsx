@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api/core';
-import { Eye, EyeOff, Lock } from 'lucide-react';
+import { Eye, EyeOff, Lock, Plus } from 'lucide-react';
 import { Suspense, use, useActionState, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { ThemeProvider } from './components/theme-provider';
@@ -79,7 +79,7 @@ function App() {
     const validation = vaultSchema.safeParse(rawData);
 
     if (!validation.success) {
-      const errorMessage = validation.error.errors[0].message;
+      const errorMessage = validation.error.issues[0].message;
       toast.error(errorMessage);
       return { status: '', success: false };
     }
@@ -116,104 +116,107 @@ function App() {
 
   return (
     <ThemeProvider defaultTheme='dark' storageKey='vite-ui-theme'>
-      <TitleBar />
+      <div className='flex flex-col h-screen overflow-hidden'>
+        <TitleBar />
 
-      <Suspense
-        fallback={
-          <div className='flex items-center justify-center min-h-screen pt-10'>
-            <p>Carregando...</p>
-          </div>
-        }
-      >
-        <VaultStatus onStatusLoaded={setHasVault} />
-      </Suspense>
-
-      {isLoggedIn && (
-        <>
-          <div className='fixed bottom-4 right-4 z-40'>
-            <Button
-              variant='outline'
-              size='icon'
-              onClick={() => {
-                setIsLoggedIn(false);
-                setPassword('');
-              }}
-              title='Trancar cofre'
-              className='w-10 h-10'
-            >
-              <Lock className='h-5! w-5!' />
-            </Button>
-          </div>
+        <div className='flex-1 overflow-hidden relative flex flex-col'>
           <Suspense
             fallback={
-              <div className='flex items-center justify-center min-h-screen'>
-                <p>Carregando Dashboard...</p>
+              <div className='flex items-center justify-center h-full pt-10'>
+                <p>Carregando...</p>
               </div>
             }
           >
-            <Dashboard />
+            <VaultStatus onStatusLoaded={setHasVault} />
           </Suspense>
-        </>
-      )}
 
-      {!isLoggedIn && hasVault !== null && (
-        <div className='flex items-center justify-center min-h-screen p-4 pt-10'>
-          <Card className='w-full max-w-md'>
-            <CardHeader>
-              <CardTitle className='text-2xl'>
-                {hasVault ? '🔐 Login no Cofre' : '🆕 Criar Novo Cofre'}
-              </CardTitle>
-              <CardDescription>
-                {hasVault
-                  ? 'Digite sua Senha Mestra para abrir.'
-                  : 'Defina uma Senha Mestra para criptografar seus dados.'}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form action={formAction} className='space-y-4' noValidate>
-                <div className='space-y-2'>
-                  <Label htmlFor='password'>Senha Mestra</Label>
-                  <InputGroup>
-                    <InputGroupInput
-                      id='password'
-                      name='password'
-                      type={showPassword ? 'text' : 'password'}
-                      placeholder='Digite sua senha... (mínimo 6 caracteres)'
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      disabled={isPending}
-                    />
-                    <InputGroupAddon align='inline-end'>
-                      <InputGroupButton
-                        size='icon-xs'
-                        onClick={() => setShowPassword(!showPassword)}
-                        type='button'
-                      >
-                        {showPassword ? (
-                          <EyeOff className='size-4' />
-                        ) : (
-                          <Eye className='size-4' />
-                        )}
-                      </InputGroupButton>
-                    </InputGroupAddon>
-                  </InputGroup>
+          {isLoggedIn && (
+            <Suspense
+              fallback={
+                <div className='flex items-center justify-center h-full'>
+                  <p>Carregando Dashboard...</p>
                 </div>
-                <Button
-                  type='submit'
-                  className='w-full'
-                  disabled={isPending || password.length < 6}
-                >
-                  {isPending
-                    ? 'Processando...'
-                    : hasVault
-                      ? 'Abrir Cofre'
-                      : 'Criar Cofre'}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
+              }
+            >
+              <Dashboard
+                onLogout={() => {
+                  setIsLoggedIn(false);
+                  setPassword('');
+                }}
+              />
+            </Suspense>
+          )}
+
+          {!isLoggedIn && hasVault !== null && (
+            <div className='flex items-center justify-center h-full p-4'>
+              <Card className='w-full max-w-md'>
+                <CardHeader>
+                  <CardTitle className='text-2xl flex items-center gap-2'>
+                    {hasVault ? (
+                      <>
+                        <Lock className='h-6 w-6' />
+                        Login no Cofre
+                      </>
+                    ) : (
+                      <>
+                        <Plus className='h-6 w-6' />
+                        Criar Novo Cofre
+                      </>
+                    )}
+                  </CardTitle>
+                  <CardDescription>
+                    {hasVault
+                      ? 'Digite sua Senha Mestra para abrir.'
+                      : 'Defina uma Senha Mestra para criptografar seus dados.'}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <form action={formAction} className='space-y-4' noValidate>
+                    <div className='space-y-2'>
+                      <Label htmlFor='password'>Senha Mestra</Label>
+                      <InputGroup>
+                        <InputGroupInput
+                          id='password'
+                          name='password'
+                          type={showPassword ? 'text' : 'password'}
+                          placeholder='Digite sua senha... (mínimo 6 caracteres)'
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          disabled={isPending}
+                        />
+                        <InputGroupAddon align='inline-end'>
+                          <InputGroupButton
+                            size='icon-xs'
+                            onClick={() => setShowPassword(!showPassword)}
+                            type='button'
+                          >
+                            {showPassword ? (
+                              <EyeOff className='size-4' />
+                            ) : (
+                              <Eye className='size-4' />
+                            )}
+                          </InputGroupButton>
+                        </InputGroupAddon>
+                      </InputGroup>
+                    </div>
+                    <Button
+                      type='submit'
+                      className='w-full'
+                      disabled={isPending || password.length < 6}
+                    >
+                      {isPending
+                        ? 'Processando...'
+                        : hasVault
+                          ? 'Abrir Cofre'
+                          : 'Criar Cofre'}
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </div>
-      )}
+      </div>
 
       <Toaster />
     </ThemeProvider>

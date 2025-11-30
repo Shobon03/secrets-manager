@@ -34,7 +34,7 @@ export function TitleBar() {
   const handleClose = () => appWindow.close();
 
   return (
-    <div className='h-10 flex items-center justify-between bg-background border-b select-none fixed top-0 left-0 right-0 z-50'>
+    <div className='h-10 flex items-center justify-between bg-background border-b select-none top-0 left-0 right-0 z-50'>
       <div
         data-tauri-drag-region
         className='flex-1 flex items-center h-full pl-4 gap-2'

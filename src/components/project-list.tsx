@@ -1,24 +1,49 @@
-import { use } from 'react';
-import { loadProjectsPromise } from '../functions/projects';
+import { Folder, FolderPlus } from 'lucide-react';
 import type { Project } from '../types';
 import { ProjectCard } from './project-card';
-import { Card, CardContent } from './ui/card';
+import { Button } from './ui/button';
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from './ui/empty';
 
 interface ProjectListProps {
+  projects: Project[];
   onEdit: (id: number) => void;
   onDeleteClick: (id: number) => void;
+  onCreateClick?: () => void;
 }
 
-export function ProjectList({ onEdit, onDeleteClick }: ProjectListProps) {
-  const projects = use(loadProjectsPromise());
-
+export function ProjectList({
+  projects,
+  onEdit,
+  onDeleteClick,
+  onCreateClick,
+}: ProjectListProps) {
   if (projects.length === 0) {
     return (
-      <Card>
-        <CardContent className='py-12 text-center text-muted-foreground'>
-          Nenhum projeto criado ainda.
-        </CardContent>
-      </Card>
+      <Empty>
+        <EmptyHeader>
+          <EmptyMedia>
+            <Folder />
+          </EmptyMedia>
+          <EmptyTitle>Nenhum Projeto Salvo</EmptyTitle>
+          <EmptyDescription>
+            Clique no botão <strong>Novo Projeto</strong> para criar um.
+          </EmptyDescription>
+        </EmptyHeader>
+        <EmptyContent className='text-center text-muted-foreground'>
+          <div className='flex gap-2'>
+            <Button onClick={onCreateClick}>
+              <FolderPlus /> Novo Projeto
+            </Button>
+          </div>
+        </EmptyContent>
+      </Empty>
     );
   }
 

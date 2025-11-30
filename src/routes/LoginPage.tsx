@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api/core';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Lock, Plus } from 'lucide-react';
 import { Suspense, use, useActionState, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '../components/ui/button';
@@ -69,7 +69,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
     const validation = vaultSchema.safeParse(rawData);
 
     if (!validation.success) {
-      const errorMessage = validation.error.errors[0].message;
+      const errorMessage = validation.error.issues[0].message;
       toast.error(errorMessage);
       return { status: '', success: false };
     }
@@ -120,8 +120,18 @@ export function LoginPage({ onLogin }: LoginPageProps) {
         <div className='flex items-center justify-center min-h-screen p-4 pt-10'>
           <Card className='w-full max-w-md'>
             <CardHeader>
-              <CardTitle className='text-2xl'>
-                {hasVault ? '🔐 Login no Cofre' : '🆕 Criar Novo Cofre'}
+              <CardTitle className='text-2xl flex items-center gap-2'>
+                {hasVault ? (
+                  <>
+                    <Lock className='h-6 w-6' />
+                    Login no Cofre
+                  </>
+                ) : (
+                  <>
+                    <Plus className='h-6 w-6' />
+                    Criar Novo Cofre
+                  </>
+                )}
               </CardTitle>
               <CardDescription>
                 {hasVault

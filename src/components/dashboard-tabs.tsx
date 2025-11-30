@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import type { Secret } from '../types';
+import type { Project, Secret } from '../types';
 import { ProjectList } from './project-list';
 import { ProjectsListSkeleton } from './projects-list-skeleton';
 import { SecretList } from './secret-list';
@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 
 interface DashboardTabsProps {
   secrets: Secret[];
+  projects: Project[];
   refreshKey: number;
   onCopy: (text: string) => Promise<void>;
   onEditSecret: (id: number) => void;
@@ -18,6 +19,7 @@ interface DashboardTabsProps {
 
 export function DashboardTabs({
   secrets,
+  projects,
   refreshKey,
   onCopy,
   onEditSecret,
@@ -47,6 +49,7 @@ export function DashboardTabs({
         <div className='space-y-4' key={`projects-${refreshKey}`}>
           <Suspense fallback={<ProjectsListSkeleton />}>
             <ProjectList
+              projects={projects}
               onEdit={onEditProject}
               onDeleteClick={onDeleteProject}
             />

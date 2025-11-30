@@ -1,12 +1,22 @@
+import { Key, Plus } from 'lucide-react';
 import type { Secret } from '../types';
 import { SecretCard } from './secret-card';
-import { Card, CardContent } from './ui/card';
+import { Button } from './ui/button';
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from './ui/empty';
 
 interface SecretListProps {
   secrets: Secret[];
   onCopy: (text: string) => Promise<void>;
   onEdit: (id: number) => void;
   onDeleteClick: (id: number) => void;
+  onCreateClick?: () => void;
 }
 
 export function SecretList({
@@ -14,20 +24,33 @@ export function SecretList({
   onCopy,
   onEdit,
   onDeleteClick,
+  onCreateClick,
 }: SecretListProps) {
   if (secrets.length === 0) {
     return (
-      <Card>
-        <CardContent className='py-12 text-center text-muted-foreground'>
-          Nenhum segredo salvo ainda. Clique no botão + para adicionar seu
-          primeiro login!
-        </CardContent>
-      </Card>
+      <Empty>
+        <EmptyHeader>
+          <EmptyMedia>
+            <Key />
+          </EmptyMedia>
+          <EmptyTitle>Nenhum Segredo Salvo</EmptyTitle>
+          <EmptyDescription>
+            Clique no botão <strong>Novo Segredo</strong> para cadastrá-lo.
+          </EmptyDescription>
+        </EmptyHeader>
+        <EmptyContent className='text-center text-muted-foreground'>
+          <div className='flex gap-2'>
+            <Button onClick={onCreateClick}>
+              <Plus /> Novo Segredo
+            </Button>
+          </div>
+        </EmptyContent>
+      </Empty>
     );
   }
 
   return (
-    <>
+    <div className='flex flex-col gap-3'>
       {secrets.map((s: Secret) => (
         <SecretCard
           key={s.id}
@@ -38,6 +61,6 @@ export function SecretList({
           isDeleting={false}
         />
       ))}
-    </>
+    </div>
   );
 }

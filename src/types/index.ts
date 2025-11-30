@@ -3,8 +3,9 @@ export interface Secret {
   title: string;
   username: string;
   password?: string;
-  created_at: string;
-  project_id?: number;
+  createdAt: string;
+  projectId?: number;
+  deletedAt?: string | null;
 }
 
 export interface AttachmentMetadata {
@@ -13,12 +14,13 @@ export interface AttachmentMetadata {
   filename: string;
   mimeType: string;
   fileSize: number;
-  created_at: string;
+  createdAt: string;
 }
 
 export interface Project {
   id: number;
   name: string;
   description?: string;
-  created_at: string;
+  createdAt: string;
+  deletedAt?: string | null;
 }

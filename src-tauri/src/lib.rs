@@ -6,7 +6,7 @@ pub mod security;
 pub mod state;
 pub mod utils;
 
-use commands::{attachments, projects, secrets, vaults};
+use commands::{attachments, projects, secrets, trash, vaults};
 
 use state::AppState;
 use std::sync::Mutex;
@@ -30,8 +30,11 @@ pub fn run() {
             vaults::export_vault,
             vaults::import_vault,
             secrets::get_all_secrets,
+            secrets::get_deleted_secrets,
             secrets::create_secret,
+            secrets::soft_delete_secret,
             secrets::delete_secret,
+            secrets::restore_secret,
             secrets::update_secret,
             attachments::add_attachment,
             attachments::get_attachments_metadata,
@@ -39,9 +42,13 @@ pub fn run() {
             attachments::delete_attachment,
             projects::create_project,
             projects::get_all_projects,
+            projects::get_deleted_projects,
             projects::get_project,
             projects::update_project,
+            projects::soft_delete_project,
             projects::delete_project,
+            projects::restore_project,
+            trash::empty_trash,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

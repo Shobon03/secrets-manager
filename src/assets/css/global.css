@@ -181,3 +181,16 @@
             sans-serif;
     }
 }
+
+/* Disable default view transition animations for root, only allow specific ones */
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+}
+
+/* Disable animations for sidebar-title to prevent emoji scale/fade */
+::view-transition-old(sidebar-title),
+::view-transition-new(sidebar-title) {
+    animation: none;
+}

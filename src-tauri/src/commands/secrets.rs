@@ -26,6 +26,7 @@ pub fn create_secret(
         username,
         password,
         created_at: chrono::Utc::now().to_rfc3339(),
+        deleted_at: None,
         project_id: None,
     })
 }
@@ -36,21 +37,22 @@ pub fn get_all_secrets(state: State<'_, AppState>) -> Result<Vec<Secret>, String
     let conn = lock.as_ref().ok_or("Cofre fechado! Faça login primeiro.")?;
 
     let mut stmt = conn
-        .prepare("SELECT id, title, username, password_blob, created_at FROM secrets")
+        .prepare("SELECT id, project_id, title, username, password_blob, created_at FROM secrets WHERE deleted_at IS NULL")
         .map_err(|e| format!("Erro ao obter secretos: {}", e))?;
 
     let secrets_iter = stmt
         .query_map([], |row| {
-            let pass_blob: Vec<u8> = row.get(3)?;
+            let pass_blob: Vec<u8> = row.get(4)?;
             let pass_str = String::from_utf8(pass_blob).unwrap_or_default();
 
             Ok(Secret {
                 id: row.get(0)?,
-                title: row.get(1)?,
-                username: row.get(2)?,
+                title: row.get(2)?,
+                username: row.get(3)?,
                 password: pass_str,
-                created_at: row.get(4)?,
-                project_id: None,
+                created_at: row.get(5)?,
+                deleted_at: None,
+                project_id: row.get(1)?,
             })
         })
         .map_err(|e| format!("Erro ao obter secretos: {}", e))?;
@@ -64,6 +66,54 @@ pub fn get_all_secrets(state: State<'_, AppState>) -> Result<Vec<Secret>, String
 }
 
 #[tauri::command]
+pub fn get_deleted_secrets(state: State<'_, AppState>) -> Result<Vec<Secret>, String> {
+    let lock = state.db.lock().map_err(|_| "Falha no Mutex".to_string())?;
+    let conn = lock.as_ref().ok_or("Cofre fechado! Faça login primeiro.")?;
+
+    let mut stmt = conn
+        .prepare("SELECT id, project_id, title, username, password_blob, created_at, deleted_at FROM secrets WHERE deleted_at IS NOT NULL")
+        .map_err(|e| format!("Erro ao obter segredos deletados: {}", e))?;
+
+    let secrets_iter = stmt
+        .query_map([], |row| {
+            let pass_blob: Vec<u8> = row.get(4)?;
+            let pass_str = String::from_utf8(pass_blob).unwrap_or_default();
+
+            Ok(Secret {
+                id: row.get(0)?,
+                title: row.get(2)?,
+                username: row.get(3)?,
+                password: pass_str,
+                created_at: row.get(5)?,
+                deleted_at: row.get(6)?,
+                project_id: row.get(1)?,
+            })
+        })
+        .map_err(|e| format!("Erro ao obter segredos deletados: {}", e))?;
+
+    let mut secrets = Vec::new();
+    for secret in secrets_iter {
+        secrets.push(secret.map_err(|e| e.to_string())?);
+    }
+
+    Ok(secrets)
+}
+
+#[tauri::command]
+pub fn soft_delete_secret(id: i32, state: State<'_, AppState>) -> Result<String, String> {
+    let lock = state.db.lock().map_err(|_| "Falha no Mutex".to_string())?;
+    let conn = lock.as_ref().ok_or("Cofre fechado! Faça login primeiro.")?;
+
+    conn.execute(
+        "UPDATE secrets SET deleted_at = ?1 WHERE id = ?2",
+        (chrono::Utc::now().to_rfc3339(), id),
+    )
+    .map_err(|e| format!("Erro ao deletar segredo: {}", e))?;
+
+    Ok("Segredo movido para a lixeira com sucesso!".to_string())
+}
+
+#[tauri::command]
 pub fn delete_secret(id: i32, state: State<'_, AppState>) -> Result<String, String> {
     let lock = state.db.lock().map_err(|_| "Falha no Mutex".to_string())?;
     let conn = lock.as_ref().ok_or("Cofre fechado! Faça login primeiro.")?;
@@ -72,6 +122,17 @@ pub fn delete_secret(id: i32, state: State<'_, AppState>) -> Result<String, Stri
         .map_err(|e| format!("Erro ao deletar segredo: {}", e))?;
 
     Ok("Segredo deletado!".to_string())
+}
+
+#[tauri::command]
+pub fn restore_secret(id: i32, state: State<'_, AppState>) -> Result<String, String> {
+    let lock = state.db.lock().map_err(|_| "Falha no Mutex".to_string())?;
+    let conn = lock.as_ref().ok_or("Cofre fechado! Faça login primeiro.")?;
+
+    conn.execute("UPDATE secrets SET deleted_at = NULL WHERE id = ?", (id,))
+        .map_err(|e| format!("Erro ao restaurar segredo: {}", e))?;
+
+    Ok("Segredo restaurado com sucesso!".to_string())
 }
 
 #[tauri::command]
