@@ -66,27 +66,27 @@ export function SettingsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='max-w-2xl! min-h-[550px] p-0 gap-0 flex flex-col'>
-        <DialogHeader className='px-6 py-4 border-b shrink-0'>
+      <DialogContent className='flex min-h-[550px] max-w-2xl! flex-col gap-0 p-0'>
+        <DialogHeader className='shrink-0 border-b px-6 py-4'>
           <DialogTitle className='flex items-center gap-2 text-base'>
             <Settings className='size-5' />
             Configurações
           </DialogTitle>
         </DialogHeader>
 
-        <div className='flex flex-1 min-h-0'>
+        <div className='flex min-h-0 flex-1'>
           {/* Sidebar */}
-          <div className='w-56 border-r bg-muted/30 p-4 shrink-0 flex flex-col'>
+          <div className='flex w-56 shrink-0 flex-col border-r bg-muted/30 p-4'>
             <nav className='space-y-6'>
               {/* Geral */}
               <div>
-                <h3 className='text-xs font-semibold text-muted-foreground uppercase mb-2 px-2'>
+                <h3 className='mb-2 px-2 font-semibold text-muted-foreground text-xs uppercase'>
                   Geral
                 </h3>
                 <button
                   type='button'
                   onClick={() => setCurrentSection('appearance')}
-                  className={`cursor-pointer w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-sm transition-colors ${
+                  className={`flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors ${
                     currentSection === 'appearance'
                       ? 'bg-primary text-primary-foreground'
                       : 'hover:bg-muted'
@@ -99,13 +99,13 @@ export function SettingsDialog({
 
               {/* Dados */}
               <div>
-                <h3 className='text-xs font-semibold text-muted-foreground uppercase mb-2 px-2'>
+                <h3 className='mb-2 px-2 font-semibold text-muted-foreground text-xs uppercase'>
                   Dados
                 </h3>
                 <button
                   type='button'
                   onClick={() => setCurrentSection('export-import')}
-                  className={`cursor-pointer w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-sm transition-colors ${
+                  className={`flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors ${
                     currentSection === 'export-import'
                       ? 'bg-primary text-primary-foreground'
                       : 'hover:bg-muted'
@@ -119,12 +119,12 @@ export function SettingsDialog({
           </div>
 
           {/* Content */}
-          <div className='flex-1 p-6 overflow-y-auto'>
+          <div className='flex-1 overflow-y-auto p-6'>
             {currentSection === 'appearance' && (
               <div className='space-y-6'>
                 <div>
-                  <h2 className='text-lg font-semibold mb-1'>Aparência</h2>
-                  <p className='text-sm text-muted-foreground'>
+                  <h2 className='mb-1 font-semibold text-lg'>Aparência</h2>
+                  <p className='text-muted-foreground text-sm'>
                     Personalize a aparência do aplicativo
                   </p>
                 </div>
@@ -134,7 +134,7 @@ export function SettingsDialog({
                 <div className='space-y-4'>
                   <div>
                     <Label className='text-base'>Tema</Label>
-                    <p className='text-sm text-muted-foreground mb-3'>
+                    <p className='mb-3 text-muted-foreground text-sm'>
                       Escolha o tema do aplicativo
                     </p>
 
@@ -145,7 +145,7 @@ export function SettingsDialog({
                       }
                       className='space-y-2'
                     >
-                      <div className='flex items-center space-x-3 border rounded-lg p-3 hover:bg-muted/50 transition-colors cursor-pointer'>
+                      <div className='flex cursor-pointer items-center space-x-3 rounded-lg border p-3 transition-colors hover:bg-muted/50'>
                         <RadioGroupItem
                           className='cursor-pointer'
                           value='light'
@@ -153,19 +153,19 @@ export function SettingsDialog({
                         />
                         <Label
                           htmlFor='light'
-                          className='flex items-center gap-2 cursor-pointer flex-1'
+                          className='flex flex-1 cursor-pointer items-center gap-2'
                         >
                           <Sun className='size-4' />
                           <div>
                             <div className='font-medium'>Claro</div>
-                            <div className='text-xs text-muted-foreground'>
+                            <div className='text-muted-foreground text-xs'>
                               Tema claro para ambientes iluminados
                             </div>
                           </div>
                         </Label>
                       </div>
 
-                      <div className='flex items-center space-x-3 border rounded-lg p-3 hover:bg-muted/50 transition-colors cursor-pointer'>
+                      <div className='flex cursor-pointer items-center space-x-3 rounded-lg border p-3 transition-colors hover:bg-muted/50'>
                         <RadioGroupItem
                           className='cursor-pointer'
                           value='dark'
@@ -173,12 +173,12 @@ export function SettingsDialog({
                         />
                         <Label
                           htmlFor='dark'
-                          className='flex items-center gap-2 cursor-pointer flex-1'
+                          className='flex flex-1 cursor-pointer items-center gap-2'
                         >
                           <Moon className='size-4' />
                           <div>
                             <div className='font-medium'>Escuro</div>
-                            <div className='text-xs text-muted-foreground'>
+                            <div className='text-muted-foreground text-xs'>
                               Tema escuro para reduzir o cansaço visual
                             </div>
                           </div>
@@ -211,7 +211,7 @@ export function SettingsDialog({
 
                   <div>
                     <Label className='text-base'>Zoom</Label>
-                    <p className='text-sm text-muted-foreground mb-3'>
+                    <p className='mb-3 text-muted-foreground text-sm'>
                       Ajuste o tamanho da interface
                     </p>
 
@@ -227,10 +227,10 @@ export function SettingsDialog({
                       </Button>
 
                       <div className='flex-1 text-center'>
-                        <span className='text-lg font-semibold'>
+                        <span className='font-semibold text-lg'>
                           {Math.round(zoomLevel * 100)}%
                         </span>
-                        <p className='text-xs text-muted-foreground'>
+                        <p className='text-muted-foreground text-xs'>
                           1x · 1.2x · 1.5x · 2x
                         </p>
                       </div>
@@ -251,7 +251,7 @@ export function SettingsDialog({
                         variant='ghost'
                         size='sm'
                         onClick={resetZoom}
-                        className='w-full mt-2'
+                        className='mt-2 w-full'
                       >
                         Redefinir para 100%
                       </Button>
@@ -264,10 +264,10 @@ export function SettingsDialog({
             {currentSection === 'export-import' && (
               <div className='space-y-6'>
                 <div>
-                  <h2 className='text-lg font-semibold mb-1'>
+                  <h2 className='mb-1 font-semibold text-lg'>
                     Exportação/Importação
                   </h2>
-                  <p className='text-sm text-muted-foreground'>
+                  <p className='text-muted-foreground text-sm'>
                     Faça backup ou restaure seus dados
                   </p>
                 </div>
@@ -278,8 +278,8 @@ export function SettingsDialog({
                   {/* Exportação */}
                   <div className='space-y-3'>
                     <div>
-                      <h3 className='font-medium mb-1'>Exportar Cofre</h3>
-                      <p className='text-sm text-muted-foreground'>
+                      <h3 className='mb-1 font-medium'>Exportar Cofre</h3>
+                      <p className='text-muted-foreground text-sm'>
                         Crie um backup criptografado de todos os seus segredos e
                         projetos
                       </p>
@@ -291,12 +291,12 @@ export function SettingsDialog({
                     >
                       {isExporting ? (
                         <>
-                          <Spinner className='size-4 mr-2' />
+                          <Spinner className='mr-2 size-4' />
                           Exportando...
                         </>
                       ) : (
                         <>
-                          <HardDriveUpload className='size-4 mr-2' />
+                          <HardDriveUpload className='mr-2 size-4' />
                           Exportar Cofre
                         </>
                       )}
@@ -308,8 +308,8 @@ export function SettingsDialog({
                   {/* Importação */}
                   <div className='space-y-3'>
                     <div>
-                      <h3 className='font-medium mb-1'>Importar Cofre</h3>
-                      <p className='text-sm text-muted-foreground'>
+                      <h3 className='mb-1 font-medium'>Importar Cofre</h3>
+                      <p className='text-muted-foreground text-sm'>
                         Restaure seus dados a partir de um backup
                       </p>
                     </div>
@@ -321,12 +321,12 @@ export function SettingsDialog({
                     >
                       {isImporting ? (
                         <>
-                          <Spinner className='size-4 mr-2' />
+                          <Spinner className='mr-2 size-4' />
                           Importando...
                         </>
                       ) : (
                         <>
-                          <HardDriveDownload className='size-4 mr-2' />
+                          <HardDriveDownload className='mr-2 size-4' />
                           Importar Cofre
                         </>
                       )}

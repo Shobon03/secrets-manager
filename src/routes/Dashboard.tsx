@@ -253,13 +253,13 @@ function DashboardContent({ onLogout }: { onLogout: () => void }) {
         titleIcon={getTitleIcon()}
       />
 
-      <SidebarInset className='h-full flex flex-col overflow-hidden'>
+      <SidebarInset className='flex h-full flex-col overflow-hidden'>
         {/* Header */}
-        <header className='h-14 border-b flex items-center px-4 justify-between shrink-0 bg-card/50'>
-          <div className='flex items-center gap-2 min-w-0 flex-1'>
+        <header className='flex h-14 shrink-0 items-center justify-between border-b bg-card/50 px-4'>
+          <div className='flex min-w-0 flex-1 items-center gap-2'>
             {!isSidebarOpen && (
               <h1
-                className='flex items-center gap-2 text-xl font-bold truncate overflow-hidden whitespace-nowrap'
+                className='flex items-center gap-2 overflow-hidden truncate whitespace-nowrap font-bold text-xl'
                 style={{ viewTransitionName: 'sidebar-title' }}
               >
                 {getTitleIcon()}
@@ -268,7 +268,7 @@ function DashboardContent({ onLogout }: { onLogout: () => void }) {
             )}
           </div>
 
-          <div className='flex gap-2 shrink-0 ml-4'>
+          <div className='ml-4 flex shrink-0 gap-2'>
             {currentView === 'secrets' && (
               <>
                 <Button
@@ -335,7 +335,7 @@ function DashboardContent({ onLogout }: { onLogout: () => void }) {
         {/* Conteúdo Scrollável */}
         <div className='flex-1 overflow-y-auto p-6'>
           {isInitialLoad ? (
-            <div className='flex items-center justify-center h-full'>
+            <div className='flex h-full items-center justify-center'>
               <div className='flex flex-col items-center gap-3'>
                 <Spinner className='size-8' />
                 <p className='text-muted-foreground'>Carregando dados...</p>
@@ -346,8 +346,8 @@ function DashboardContent({ onLogout }: { onLogout: () => void }) {
               {currentView === 'secrets' && (
                 <>
                   {isPending && (
-                    <div className='flex items-center justify-center py-8 text-sm text-muted-foreground'>
-                      <Spinner className='size-4 mr-2' />
+                    <div className='flex items-center justify-center py-8 text-muted-foreground text-sm'>
+                      <Spinner className='mr-2 size-4' />
                       Atualizando lista...
                     </div>
                   )}
@@ -366,8 +366,8 @@ function DashboardContent({ onLogout }: { onLogout: () => void }) {
               {currentView === 'projects' && (
                 <>
                   {isPending && (
-                    <div className='flex items-center justify-center py-8 text-sm text-muted-foreground'>
-                      <Spinner className='size-4 mr-2' />
+                    <div className='flex items-center justify-center py-8 text-muted-foreground text-sm'>
+                      <Spinner className='mr-2 size-4' />
                       Atualizando lista...
                     </div>
                   )}
@@ -385,8 +385,8 @@ function DashboardContent({ onLogout }: { onLogout: () => void }) {
               {currentView === 'trash' && (
                 <>
                   {isPending && (
-                    <div className='flex items-center justify-center py-8 text-sm text-muted-foreground'>
-                      <Spinner className='size-4 mr-2' />
+                    <div className='flex items-center justify-center py-8 text-muted-foreground text-sm'>
+                      <Spinner className='mr-2 size-4' />
                       Atualizando lista...
                     </div>
                   )}

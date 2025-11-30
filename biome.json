@@ -38,6 +38,9 @@
       "enabled": true,
       "indentStyle": "space",
       "indentWidth": 4
+    },
+    "parser": {
+      "tailwindDirectives": true
     }
   },
   "assist": {

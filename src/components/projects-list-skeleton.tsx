@@ -8,13 +8,13 @@ export function ProjectsListSkeleton() {
         <Card key={i} className='group'>
           <CardHeader className='flex flex-row items-center gap-3 space-y-0 pb-2'>
             <Skeleton className='size-10 rounded-full' />
-            <div className='space-y-1 flex-1'>
+            <div className='flex-1 space-y-1'>
               <Skeleton className='h-4 w-24' />
               <Skeleton className='h-3 w-32' />
             </div>
           </CardHeader>
           <CardContent>
-            <Skeleton className='h-3 w-full mb-1' />
+            <Skeleton className='mb-1 h-3 w-full' />
             <Skeleton className='h-3 w-2/3' />
           </CardContent>
         </Card>

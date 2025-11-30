@@ -108,7 +108,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
     <>
       <Suspense
         fallback={
-          <div className='flex items-center justify-center min-h-screen pt-10'>
+          <div className='flex min-h-screen items-center justify-center pt-10'>
             <p>Carregando...</p>
           </div>
         }
@@ -117,10 +117,10 @@ export function LoginPage({ onLogin }: LoginPageProps) {
       </Suspense>
 
       {hasVault !== null && (
-        <div className='flex items-center justify-center min-h-screen p-4 pt-10'>
+        <div className='flex min-h-screen items-center justify-center p-4 pt-10'>
           <Card className='w-full max-w-md'>
             <CardHeader>
-              <CardTitle className='text-2xl flex items-center gap-2'>
+              <CardTitle className='flex items-center gap-2 text-2xl'>
                 {hasVault ? (
                   <>
                     <Lock className='h-6 w-6' />

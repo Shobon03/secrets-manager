@@ -22,7 +22,7 @@ export function SecretsListSkeleton() {
                   <Skeleton className='h-8 w-8 rounded-full' />
                 </div>
               </div>
-              <div className='flex gap-2 ml-4'>
+              <div className='ml-4 flex gap-2'>
                 <Skeleton className='h-9 w-9 rounded-md' />
                 <Skeleton className='h-9 w-9 rounded-md' />
               </div>

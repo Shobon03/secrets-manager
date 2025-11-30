@@ -39,14 +39,14 @@ export function AppSidebar({
       <SidebarHeader className='p-0'>
         <div
           className={cn([
-            'flex h-14 items-center gap-2 px-2 border-b',
+            'flex h-14 items-center gap-2 border-b px-2',
             state !== 'expanded' && 'ml-1',
           ])}
         >
           <Button
             type='button'
             onClick={toggleSidebar}
-            className='size-10 flex items-center justify-center rounded-md hover:bg-sidebar-accent cursor-pointer shrink-0 bg-transparent text-black dark:text-white'
+            className='flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-md bg-transparent text-black hover:bg-sidebar-accent dark:text-white'
             title='Toggle Sidebar'
           >
             {state === 'expanded' ? (
@@ -57,7 +57,7 @@ export function AppSidebar({
           </Button>
           {state === 'expanded' && (
             <div
-              className='flex items-center gap-2 font-bold text-lg truncate overflow-hidden whitespace-nowrap'
+              className='flex items-center gap-2 overflow-hidden truncate whitespace-nowrap font-bold text-lg'
               style={{ viewTransitionName: 'sidebar-title' }}
             >
               {titleIcon}
@@ -128,7 +128,7 @@ export function AppSidebar({
               onClick={onLogout}
               tooltip='Trancar Cofre'
               size='lg'
-              className='text-destructive hover:text-destructive hover:bg-destructive/10 [&>svg]:size-5'
+              className='text-destructive hover:bg-destructive/10 hover:text-destructive [&>svg]:size-5'
             >
               <LogOut />
               {state === 'expanded' && <span>Trancar Cofre</span>}

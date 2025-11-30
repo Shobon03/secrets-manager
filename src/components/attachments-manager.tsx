@@ -70,7 +70,7 @@ function AttachmentsList({
   const attachments = use(getAttachmentsPromise(secretId));
 
   if (attachments.length === 0) {
-    return <p className='text-sm text-muted-foreground'>Nenhum arquivo</p>;
+    return <p className='text-muted-foreground text-sm'>Nenhum arquivo</p>;
   }
 
   const formatFileSize = (bytes: number): string => {
@@ -88,18 +88,18 @@ function AttachmentsList({
           key={attachment.id}
           className='flex items-center justify-between gap-3 rounded-lg border bg-card p-3 transition-colors hover:bg-accent/50'
         >
-          <div className='flex items-center gap-3 min-w-0 flex-1'>
+          <div className='flex min-w-0 flex-1 items-center gap-3'>
             <FileIcon className='size-5 shrink-0 text-muted-foreground' />
             <div className='min-w-0 flex-1'>
-              <p className='truncate text-sm font-medium'>
+              <p className='truncate font-medium text-sm'>
                 {attachment.filename}
               </p>
-              <p className='text-xs text-muted-foreground'>
+              <p className='text-muted-foreground text-xs'>
                 {formatFileSize(attachment.fileSize)}
               </p>
             </div>
           </div>
-          <div className='flex items-center gap-1 shrink-0'>
+          <div className='flex shrink-0 items-center gap-1'>
             <Button
               type='button'
               variant='ghost'
@@ -336,7 +336,7 @@ export function AttachmentsManager({
   return (
     <div className='space-y-2'>
       <div className='flex items-center justify-between'>
-        <h3 className='text-sm font-medium'>Arquivos</h3>
+        <h3 className='font-medium text-sm'>Arquivos</h3>
         <Button
           type='button'
           variant='outline'
@@ -350,7 +350,7 @@ export function AttachmentsManager({
       </div>
 
       {!hasAnyAttachments && (
-        <p className='text-sm text-muted-foreground'>Nenhum arquivo</p>
+        <p className='text-muted-foreground text-sm'>Nenhum arquivo</p>
       )}
 
       {hasAnyAttachments && (
@@ -361,21 +361,21 @@ export function AttachmentsManager({
               key={p.id}
               className='flex items-center justify-between gap-3 rounded-lg border bg-card p-3 transition-colors hover:bg-accent/50'
             >
-              <div className='flex items-center gap-3 min-w-0 flex-1'>
+              <div className='flex min-w-0 flex-1 items-center gap-3'>
                 <FileIcon className='size-5 shrink-0 text-muted-foreground' />
                 <div className='min-w-0 flex-1'>
-                  <p className='truncate text-sm font-medium'>
+                  <p className='truncate font-medium text-sm'>
                     {p.file.name}
-                    <span className='ml-2 text-xs text-muted-foreground'>
+                    <span className='ml-2 text-muted-foreground text-xs'>
                       (pendente)
                     </span>
                   </p>
-                  <p className='text-xs text-muted-foreground'>
+                  <p className='text-muted-foreground text-xs'>
                     {formatFileSize(p.file.size)}
                   </p>
                 </div>
               </div>
-              <div className='flex items-center gap-1 shrink-0'>
+              <div className='flex shrink-0 items-center gap-1'>
                 <Button
                   type='button'
                   variant='ghost'
@@ -393,7 +393,7 @@ export function AttachmentsManager({
           {secretId !== null && (
             <Suspense
               fallback={
-                <p className='text-sm text-muted-foreground'>
+                <p className='text-muted-foreground text-sm'>
                   Carregando arquivos...
                 </p>
               }

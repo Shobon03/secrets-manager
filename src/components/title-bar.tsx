@@ -34,13 +34,13 @@ export function TitleBar() {
   const handleClose = () => appWindow.close();
 
   return (
-    <div className='h-10 flex items-center justify-between bg-background border-b select-none top-0 left-0 right-0 z-50'>
+    <div className='top-0 right-0 left-0 z-50 flex h-10 select-none items-center justify-between border-b bg-background'>
       <div
         data-tauri-drag-region
-        className='flex-1 flex items-center h-full pl-4 gap-2'
+        className='flex h-full flex-1 items-center gap-2 pl-4'
       >
-        <LockKeyhole size={16} className='text-primary pointer-events-none' />
-        <span className='text-sm font-medium pointer-events-none'>
+        <LockKeyhole size={16} className='pointer-events-none text-primary' />
+        <span className='pointer-events-none font-medium text-sm'>
           Secrets Manager
         </span>
       </div>
@@ -89,7 +89,7 @@ export function TitleBar() {
           <Button
             variant='ghost'
             size='icon'
-            className='h-full w-12 rounded-none hover:bg-red-500! hover:text-white transition-colors'
+            className='h-full w-12 rounded-none transition-colors hover:bg-red-500! hover:text-white'
             onClick={handleClose}
             title='Fechar'
           >

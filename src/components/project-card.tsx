@@ -23,14 +23,14 @@ export function ProjectCard({ project, onEdit, onDelete }: ProjectCardProps) {
         <Card className='group transition-all hover:border-primary/50 hover:shadow-md'>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
             <div className='flex items-center gap-3'>
-              <div className='flex size-10 items-center justify-center rounded-full bg-secondary/50 text-primary group-hover:bg-primary/10 group-hover:text-primary transition-colors'>
+              <div className='flex size-10 items-center justify-center rounded-full bg-secondary/50 text-primary transition-colors group-hover:bg-primary/10 group-hover:text-primary'>
                 <Folder className='size-5' />
               </div>
               <div>
-                <CardTitle className='text-base font-semibold leading-none'>
+                <CardTitle className='font-semibold text-base leading-none'>
                   {project.name}
                 </CardTitle>
-                <p className='text-xs text-muted-foreground mt-1'>
+                <p className='mt-1 text-muted-foreground text-xs'>
                   Criado em{' '}
                   {new Date(
                     project.createdAt.replace(' ', 'T'),
@@ -38,7 +38,7 @@ export function ProjectCard({ project, onEdit, onDelete }: ProjectCardProps) {
                 </p>
               </div>
             </div>
-            <div className='flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity'>
+            <div className='flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100'>
               <Button
                 variant='outline'
                 size='icon-sm'
@@ -58,7 +58,7 @@ export function ProjectCard({ project, onEdit, onDelete }: ProjectCardProps) {
             </div>
           </CardHeader>
           <CardContent>
-            <p className='text-sm text-muted-foreground line-clamp-2'>
+            <p className='line-clamp-2 text-muted-foreground text-sm'>
               {project.description || 'Sem descrição.'}
             </p>
           </CardContent>

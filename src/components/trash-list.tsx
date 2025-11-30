@@ -87,17 +87,17 @@ export function TrashList({
           key={`${item.type}-${item.id}`}
           className='flex items-center justify-between gap-3 rounded-lg border bg-card p-3 transition-colors hover:bg-accent/50'
         >
-          <div className='flex items-center gap-3 min-w-0 flex-1'>
+          <div className='flex min-w-0 flex-1 items-center gap-3'>
             {item.type === 'secret' ? (
               <Key className='size-5 shrink-0 text-muted-foreground' />
             ) : (
               <Folder className='size-5 shrink-0 text-muted-foreground' />
             )}
             <div className='min-w-0 flex-1'>
-              <p className='truncate text-sm font-medium'>
+              <p className='truncate font-medium text-sm'>
                 {'title' in item ? item.title : item.name}
               </p>
-              <p className='text-xs text-muted-foreground'>
+              <p className='text-muted-foreground text-xs'>
                 Deletado em:{' '}
                 {item.deletedAt
                   ? new Date(item.deletedAt).toLocaleDateString()
@@ -105,7 +105,7 @@ export function TrashList({
               </p>
             </div>
           </div>
-          <div className='flex items-center gap-1 shrink-0'>
+          <div className='flex shrink-0 items-center gap-1'>
             <Button
               type='button'
               variant='outline'

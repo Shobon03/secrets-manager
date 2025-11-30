@@ -149,13 +149,13 @@ function App() {
     <ThemeProvider defaultTheme='dark' storageKey='vite-ui-theme'>
       <ZoomProvider>
         <ZoomKeyboardShortcuts />
-        <div className='flex flex-col h-screen overflow-hidden'>
+        <div className='flex h-screen flex-col overflow-hidden'>
           <TitleBar />
 
-          <div className='flex-1 overflow-hidden relative flex flex-col'>
+          <div className='relative flex flex-1 flex-col overflow-hidden'>
             <Suspense
               fallback={
-                <div className='flex items-center justify-center h-full pt-10'>
+                <div className='flex h-full items-center justify-center pt-10'>
                   <p>Carregando...</p>
                 </div>
               }
@@ -166,7 +166,7 @@ function App() {
             {isLoggedIn && (
               <Suspense
                 fallback={
-                  <div className='flex items-center justify-center h-full'>
+                  <div className='flex h-full items-center justify-center'>
                     <p>Carregando Dashboard...</p>
                   </div>
                 }
@@ -181,10 +181,10 @@ function App() {
             )}
 
             {!isLoggedIn && hasVault !== null && (
-              <div className='flex items-center justify-center h-full p-4'>
+              <div className='flex h-full items-center justify-center p-4'>
                 <Card className='w-full max-w-md'>
                   <CardHeader>
-                    <CardTitle className='text-2xl flex items-center gap-2'>
+                    <CardTitle className='flex items-center gap-2 text-2xl'>
                       {hasVault ? (
                         <>
                           <Lock className='h-6 w-6' />

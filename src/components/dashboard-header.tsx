@@ -36,8 +36,8 @@ export function DashboardHeader({
   isPendingEdit,
 }: DashboardHeaderProps) {
   return (
-    <div className='flex items-center justify-between mb-6'>
-      <h2 className='text-3xl font-bold flex items-center gap-2'>
+    <div className='mb-6 flex items-center justify-between'>
+      <h2 className='flex items-center gap-2 font-bold text-3xl'>
         <Key className='h-7 w-7' />
         Meus Segredos
       </h2>
