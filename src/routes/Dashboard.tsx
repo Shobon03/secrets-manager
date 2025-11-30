@@ -51,7 +51,7 @@ import { useProjectsForm } from '../hooks/dashboard/useProjectsForm';
 import { useSecretDeletion } from '../hooks/dashboard/useSecretDeletion';
 import { useSecretsForm } from '../hooks/dashboard/useSecretsForm';
 import { useVaultBackup } from '../hooks/dashboard/useVaultBackup';
-import type { Secret } from '../types';
+import type { Project, Secret } from '../types';
 
 type OptimisticAction =
   | { type: 'create'; secret: Secret }
@@ -81,13 +81,9 @@ function DashboardContent({ onLogout }: { onLogout: () => void }) {
 
   // Estados para dados carregados
   const [secrets, setSecrets] = useState<Secret[]>([]);
-  const [projects, setProjects] = useState<
-    Array<{ id: number; name: string; emoji: string; deletedAt: string | null }>
-  >([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [deletedSecrets, setDeletedSecrets] = useState<Secret[]>([]);
-  const [deletedProjects, setDeletedProjects] = useState<
-    Array<{ id: number; name: string; emoji: string; deletedAt: string | null }>
-  >([]);
+  const [deletedProjects, setDeletedProjects] = useState<Project[]>([]);
 
   // Estado Otimista (apenas Segredos por enquanto)
   const [optimisticSecrets, addOptimisticSecret] = useOptimistic(

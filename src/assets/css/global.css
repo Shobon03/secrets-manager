@@ -180,6 +180,11 @@
             "Segoe UI",
             sans-serif;
     }
+
+    /* Compensa o stroke-width dos ícones SVG no zoom */
+    svg {
+        stroke-width: calc(2 * var(--icon-stroke-compensation, 1));
+    }
 }
 
 /* Disable default view transition animations for root, only allow specific ones */

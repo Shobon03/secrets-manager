@@ -2,6 +2,8 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
+    let _ = fix_path_env::fix();
+
     #[cfg(any(target_os = "linux", target_os = "freebsd"))]
     {
         if std::env::var("GTK_USE_PORTAL").is_err() {

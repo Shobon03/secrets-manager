@@ -54,7 +54,7 @@ export function TitleBar() {
             onClick={handleMinimize}
             title='Minimizar'
           >
-            <Minus className='w-5! h-5!' />
+            <Minus className='size-5!' />
           </Button>
 
           <Button
@@ -65,9 +65,24 @@ export function TitleBar() {
             title={isMaximized ? 'Restaurar' : 'Maximizar'}
           >
             {isMaximized ? (
-              <Square className='w-3.5! h-3.5! rotate-45' />
+              <svg
+                xmlns='http://www.w3.org/2000/svg'
+                width='24'
+                height='24'
+                viewBox='0 0 24 24'
+                fill='none'
+                stroke='currentColor'
+                strokeWidth='2'
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                className='size-3.5!'
+              >
+                <title>Restaurar</title>
+                <rect x='3' y='6' width='15' height='15' rx='2' />
+                <path d='M21 18V5a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v1' />
+              </svg>
             ) : (
-              <Square className='w-3.5! h-3.5!' />
+              <Square className='size-3.5!' />
             )}
           </Button>
 
@@ -78,7 +93,7 @@ export function TitleBar() {
             onClick={handleClose}
             title='Fechar'
           >
-            <X className='w-5! h-5!' />
+            <X className='size-5!' />
           </Button>
         </div>
       )}

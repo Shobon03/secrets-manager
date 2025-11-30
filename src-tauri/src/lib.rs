@@ -50,6 +50,14 @@ pub fn run() {
             projects::restore_project,
             trash::empty_trash,
         ])
+        .on_page_load(|webview, _payload| {
+            // Desabilita menu de contexto apenas em produção
+            #[cfg(not(debug_assertions))]
+            {
+                let _ = webview
+                    .eval("window.addEventListener('contextmenu', (e) => e.preventDefault());");
+            }
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

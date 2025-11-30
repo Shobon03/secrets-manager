@@ -1,26 +1,22 @@
 import {
   HardDriveDownload,
   HardDriveUpload,
-  Monitor,
   Moon,
   Palette,
   Settings,
   Sun,
+  ZoomIn,
+  ZoomOut,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTheme } from './theme-provider';
 import { Button } from './ui/button';
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from './ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Label } from './ui/label';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { Separator } from './ui/separator';
 import { Spinner } from './ui/spinner';
+import { useZoom } from './zoom-provider';
 
 type SettingsSection = 'appearance' | 'export-import';
 
@@ -44,10 +40,33 @@ export function SettingsDialog({
   const [currentSection, setCurrentSection] =
     useState<SettingsSection>('appearance');
   const { theme, setTheme } = useTheme();
+  const { zoomLevel, zoomIn, zoomOut, resetZoom, canZoomIn, canZoomOut } =
+    useZoom();
+
+  // Listener para atualizar o modal quando usar atalhos de teclado
+  useEffect(() => {
+    if (!open) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && (e.key === '+' || e.key === '=')) {
+        e.preventDefault();
+        zoomIn();
+      } else if ((e.ctrlKey || e.metaKey) && e.key === '-') {
+        e.preventDefault();
+        zoomOut();
+      } else if ((e.ctrlKey || e.metaKey) && e.key === '0') {
+        e.preventDefault();
+        resetZoom();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [open, zoomIn, zoomOut, resetZoom]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='max-w-2xl! h-[500px] p-0 gap-0 flex flex-col'>
+      <DialogContent className='max-w-2xl! min-h-[550px] p-0 gap-0 flex flex-col'>
         <DialogHeader className='px-6 py-4 border-b shrink-0'>
           <DialogTitle className='flex items-center gap-2 text-base'>
             <Settings className='size-5' />
@@ -122,7 +141,7 @@ export function SettingsDialog({
                     <RadioGroup
                       value={theme}
                       onValueChange={(value) =>
-                        setTheme(value as 'light' | 'dark' | 'system')
+                        setTheme(value as 'light' | 'dark')
                       }
                       className='space-y-2'
                     >
@@ -186,6 +205,57 @@ export function SettingsDialog({
                         </Label>
                       </div>*/}
                     </RadioGroup>
+                  </div>
+
+                  <Separator />
+
+                  <div>
+                    <Label className='text-base'>Zoom</Label>
+                    <p className='text-sm text-muted-foreground mb-3'>
+                      Ajuste o tamanho da interface
+                    </p>
+
+                    <div className='flex items-center gap-3'>
+                      <Button
+                        variant='outline'
+                        size='icon'
+                        onClick={zoomOut}
+                        disabled={!canZoomOut}
+                        title='Diminuir zoom (Ctrl/Cmd + -)'
+                      >
+                        <ZoomOut className='size-4' />
+                      </Button>
+
+                      <div className='flex-1 text-center'>
+                        <span className='text-lg font-semibold'>
+                          {Math.round(zoomLevel * 100)}%
+                        </span>
+                        <p className='text-xs text-muted-foreground'>
+                          1x · 1.2x · 1.5x · 2x
+                        </p>
+                      </div>
+
+                      <Button
+                        variant='outline'
+                        size='icon'
+                        onClick={zoomIn}
+                        disabled={!canZoomIn}
+                        title='Aumentar zoom (Ctrl/Cmd + +)'
+                      >
+                        <ZoomIn className='size-4' />
+                      </Button>
+                    </div>
+
+                    {zoomLevel !== 1 && (
+                      <Button
+                        variant='ghost'
+                        size='sm'
+                        onClick={resetZoom}
+                        className='w-full mt-2'
+                      >
+                        Redefinir para 100%
+                      </Button>
+                    )}
                   </div>
                 </div>
               </div>
